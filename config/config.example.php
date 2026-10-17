@@ -1,0 +1,77 @@
+<?php
+/**
+ * NOVA Home — local configuration TEMPLATE (tracked example).
+ *
+ * SETUP: copy this file to `config/config.php` and adjust the values for your
+ * machine. `config/config.php` is LOCAL-ONLY and git-ignored — it is where
+ * real credentials live and it must NEVER be committed. This
+ * `config.example.php` file is the only configuration tracked in Git and it
+ * contains no secrets.
+ *
+ * ── Values to review during setup ─────────────────────────────────────────
+ * db.*             Database connection. The defaults below match a stock
+ *                  XAMPP setup (user `root`, empty password, database
+ *                  `nova_home`) and are safe for LOCAL development only.
+ *                  Use a dedicated least-privilege user with a strong
+ *                  password in production.
+ * base_url         Public URL path of the app root, with leading and trailing
+ *                  slash. null = auto-detect from the request (works whether
+ *                  the project lives at /nova-home/ or /nova-home/nova-home/ —
+ *                  see relocation note in PROJECT_GUIDE.md).
+ *                  Set explicitly in production, e.g. 'base_url' => '/',
+ *                  or 'base_url' => '/shop/' when in a subdirectory.
+ * env + debug      'development' | 'production'. Production MUST use
+ *                  'env' => 'production' and 'debug' => false so PHP errors
+ *                  are logged server-side and never displayed to visitors.
+ * demo_access      One-click demo sign-in switch (see below). Keep false.
+ *
+ * ── Development-only demo sign-in ──────────────────────────────────────────
+ * The demo customer/admin shortcuts (`api/demo-customer-login.php`,
+ * `api/demo-admin-login.php`) are enforced SERVER-SIDE and require BOTH:
+ *   1. 'env' => 'development'
+ *   2. 'demo_access' => true
+ * The committed default below is false, so a fresh checkout cannot enable
+ * demo sign-in — even if a URL or client-side variable is manipulated, the
+ * handlers return 403 unless both conditions hold. Only enable this in a
+ * local development config; NEVER enable it on a public production server.
+ *
+ * ── Frontend note ──────────────────────────────────────────────────────────
+ * Delivery defaults below mirror the audited frontend values
+ * (`NOVA.DELIVERY_FEE = 60`, `NOVA.FREE_DELIVERY_OVER = 1500` in
+ * `js/products.js`). They are fallbacks only — the `settings` database table
+ * is the source of truth (see `includes/functions.php` → `nova_setting()`).
+ */
+
+declare(strict_types=1);
+
+return [
+    // 'development' | 'production'. Controls error display in bootstrap.
+    'env'   => 'development',
+    'debug' => true,
+
+    // One-click demo sign-in (development ONLY). Disabled by default.
+    // Requires env === 'development' as well; production config must keep this false.
+    'demo_access' => false,
+
+    // PDO connection parameters (see config/database.php). No mysqli anywhere.
+    'db' => [
+        'host'    => '127.0.0.1',
+        'port'    => 3306,
+        'name'    => 'nova_home',
+        'user'    => 'root',
+        'pass'    => '', // XAMPP local default. Production secret goes ONLY in config.php.
+        'charset' => 'utf8mb4',
+    ],
+
+    // Public URL path of the app root, with leading and trailing slash.
+    // null = auto-detect from the request (works whether the project lives at
+    // /nova-home/ or /nova-home/nova-home/ — see relocation note in PROJECT_GUIDE.md).
+    // Set explicitly for production, e.g. 'base_url' => '/',
+    'base_url' => null,
+
+    // Fallback business values. Mirrors of the frontend; DB settings win when available.
+    'business' => [
+        'delivery_fee'            => 60,
+        'free_delivery_threshold' => 1500,
+    ],
+];

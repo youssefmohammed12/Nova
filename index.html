@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NOVA Home | Modern home and lifestyle, Cairo</title>
+<meta name="description" content="Home decor, lighting, kitchen, storage and small furniture, delivered across Egypt.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@14.3.0/swiper-bundle.min.css">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/pages.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body data-page="home">
+<a class="skip-link" href="#main">Skip to content</a>
+<div id="site-header"></div>
+
+<main id="main">
+<section class="hero" aria-labelledby="hero-title"><div class="container"><div class="row align-items-center g-5">
+  <div class="col-lg-6 order-2 order-lg-1"><div class="hero__text" data-reveal>
+    <p class="hero__eyebrow">Cairo · Cash on delivery</p>
+    <h1 id="hero-title">Make space for better living</h1>
+    <p>Thoughtfully selected pieces that bring comfort, character and simplicity into your everyday home.</p>
+    <div class="hero__actions"><a class="btn btn-nova btn-lg" href="shop.html">Shop Collection</a><a class="btn btn-ghost btn-lg" href="shop.html?sort=new">Explore New Arrivals</a></div></div></div>
+  <div class="col-lg-6 order-1 order-lg-2"><div class="hero__art">
+    <div class="hero-comp">
+      <div class="hero-comp__backdrop" aria-hidden="true"></div>
+      <div class="hero-frame hero-frame--main">
+        <img src="assets/images/products/cairo-boucle-chair/main.webp" width="600" height="600" alt="Cairo Boucle Accent Chair in an inviting contemporary living space" class="hero-frame__img">
+      </div>
+      <div class="hero-frame hero-frame--accent">
+        <img src="assets/images/products/sahara-vase/main.webp" width="400" height="400" alt="Sahara handcrafted ceramic clay vase" class="hero-frame__img">
+        <span class="hero-frame__tag"><i class="bi bi-stars" aria-hidden="true"></i> Artisanal craft</span>
+      </div>
+      <div class="hero__chip">
+        <i class="bi bi-truck" aria-hidden="true"></i>
+        <span>Delivery across Egypt<br><small class="text-muted-nova">Pay when it arrives</small></span>
+      </div>
+    </div>
+  </div></div>
+</div></div></section>
+
+<section class="section section--tight" aria-labelledby="cat-title"><div class="container">
+  <div class="section-head"><div><p class="eyebrow">Rooms & pieces</p><h2 id="cat-title">Shop by category</h2><p>Start with the room or the piece you have in mind.</p></div><a class="link-arrow" href="shop.html">View all products <i class="bi bi-arrow-right" aria-hidden="true"></i></a></div>
+  <div class="row g-3" id="category-grid"></div></div></section>
+
+<section class="section" aria-labelledby="feat-title"><div class="container">
+  <div class="section-head"><div><p class="eyebrow">This season</p><h2 id="feat-title">Featured pieces</h2><p>A few favourites from this season.</p></div><a class="link-arrow" href="shop.html">Shop all <i class="bi bi-arrow-right" aria-hidden="true"></i></a></div>
+  <div class="row g-3 g-lg-4" id="featured-grid"></div></div></section>
+
+<section class="section pt-0"><div class="container"><div class="promo" data-reveal>
+  <div class="promo__media">
+    <div class="promo__media-frame">
+      <img class="promo__img promo__img--main" src="assets/images/products/halo-mirror/main.webp" width="700" height="700" loading="lazy" alt="Halo Round Wall Mirror styled in a calm interior">
+      <div class="promo__badge"><span class="badge-nova">Decor Edit</span></div>
+      <div class="promo__sub-card" aria-hidden="true">
+        <img class="promo__img promo__img--sub" src="assets/images/products/pillar-candles/main.webp" width="280" height="280" loading="lazy" alt="">
+      </div>
+    </div>
+  </div>
+  <div class="promo__text">
+    <p class="eyebrow">Decor refresh</p>
+    <h2>Small details. <br>Big difference.</h2>
+    <p>A new set of candles, mirrors and shelving to finish a room without starting over. Simple shapes, natural materials, honest prices.</p>
+    <div class="promo__features">
+      <div class="promo__feat"><i class="bi bi-check2" aria-hidden="true"></i><span>Hand-finished natural materials</span></div>
+      <div class="promo__feat"><i class="bi bi-check2" aria-hidden="true"></i><span>Flat-rate delivery across Egypt</span></div>
+    </div>
+    <div class="promo__actions">
+      <a class="btn btn-nova" href="shop.html?cat=decor">Shop Decor</a>
+      <a class="btn btn-ghost" href="shop.html">Explore All Pieces</a>
+    </div>
+  </div>
+</div></div></section>
+
+<section class="section pt-0" aria-labelledby="best-title"><div class="container">
+  <div class="section-head"><div><p class="eyebrow">Customer favourites</p><h2 id="best-title">Best sellers</h2><p>The pieces customers reorder and gift most.</p></div>
+    <div class="swiper-nav"><button class="btn btn-ghost icon-btn border" id="best-prev" type="button" aria-label="Previous products"><i class="bi bi-chevron-left" aria-hidden="true"></i></button><button class="btn btn-ghost icon-btn border" id="best-next" type="button" aria-label="Next products"><i class="bi bi-chevron-right" aria-hidden="true"></i></button></div></div>
+  <div class="swiper" id="bestsellers"><div class="swiper-wrapper" id="bestseller-slides"></div></div></div></section>
+
+<section class="section pt-0" aria-labelledby="look-title"><div class="container">
+  <div class="section-head"><div><p class="eyebrow">Editorial Lookbook</p><h2 id="look-title">Shop the Look</h2><p>The Warm Minimalist Corner · Four coordinated pieces designed to live together.</p></div><a class="link-arrow" href="shop.html">Browse full collection <i class="bi bi-arrow-right" aria-hidden="true"></i></a></div>
+  <div class="look" data-reveal>
+    <div class="look__showcase">
+      <div class="look__showcase-media">
+        <img src="assets/images/products/cairo-boucle-chair/main.webp" width="800" height="800" loading="lazy" alt="The Warm Minimalist Living Room Look featuring the Cairo Boucle Chair">
+        <div class="look__badge"><span class="badge-nova badge-nova--dark">Curated Ensemble</span></div>
+        <button class="look__quick-anchor" type="button" data-look="cairo-boucle-chair" aria-label="Quick view Cairo Boucle Accent Chair">
+          <i class="bi bi-eye" aria-hidden="true"></i> Quick View Anchor Piece
+        </button>
+      </div>
+      <div class="look__showcase-body">
+        <h3 class="look__showcase-title">The Warm Minimalist Corner</h3>
+        <p class="look__showcase-desc">A natural balance of textured boucle upholstery, handcrafted earthenware, warm oak wood, and architectural lighting.</p>
+        <div class="look__showcase-meta">
+          <div class="look__meta-item">
+            <span class="text-muted-nova">Collection Set</span>
+            <strong>4 Coordinated Pieces</strong>
+          </div>
+          <div class="look__meta-item text-end">
+            <span class="text-muted-nova">Set Total</span>
+            <strong class="look__total-price" id="look-total">EGP 13,040</strong>
+          </div>
+        </div>
+      </div>
+      <div id="look-spots" class="visually-hidden" aria-hidden="true"></div>
+    </div>
+    <div class="look__collection" id="look-list">
+      <div class="look__collection-head">
+        <h3 class="h5 mb-0">Featured in this look</h3>
+        <span class="text-muted-nova">Tap any piece to quick view</span>
+      </div>
+      <div class="look__grid" id="look-items"></div>
+    </div>
+  </div></div></section>
+
+<section class="section pt-0" id="recent-section" aria-labelledby="recent-title" hidden><div class="container">
+  <div class="section-head"><div><p class="eyebrow">Your browsing</p><h2 id="recent-title">Recently Viewed</h2><p>Pick up where you left off.</p></div><a class="link-arrow" href="shop.html">Shop all <i class="bi bi-arrow-right" aria-hidden="true"></i></a></div>
+  <div class="row g-3 g-lg-4" id="recent-grid"></div></div></section>
+
+<section class="section section--stone" id="why-nova" aria-labelledby="why-title"><div class="container">
+  <h2 id="why-title" class="mb-4">Why NOVA</h2>
+  <div class="row g-4">
+    <div class="col-sm-6 col-lg-3"><div class="benefit"><i class="bi bi-patch-check" aria-hidden="true"></i><div><h3>Quality selection</h3><p>Every piece is checked before it goes on the shelf.</p></div></div></div>
+    <div class="col-sm-6 col-lg-3"><div class="benefit"><i class="bi bi-truck" aria-hidden="true"></i><div><h3>Fast local delivery</h3><p>Usually 2 to 4 working days in Cairo and Giza.</p></div></div></div>
+    <div class="col-sm-6 col-lg-3"><div class="benefit"><i class="bi bi-arrow-repeat" aria-hidden="true"></i><div><h3>Easy returns</h3><p>Return unused items within 14 days of delivery.</p></div></div></div>
+    <div class="col-sm-6 col-lg-3"><div class="benefit"><i class="bi bi-cash-coin" aria-hidden="true"></i><div><h3>Cash on delivery</h3><p>Check your order, then pay the courier.</p></div></div></div>
+  </div></div></section>
+
+<section class="section" aria-labelledby="rev-title"><div class="container">
+  <h2 id="rev-title" class="mb-4">What customers say</h2>
+  <div class="row g-3 g-lg-4">
+    <div class="col-md-4"><figure class="quote"><span class="stars" role="img" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span><blockquote class="m-0"><p>The Cairo chair is more comfortable than it looks, and the fabric feels solid. It arrived in three days.</p></blockquote><footer><strong>Mariam Hassan</strong>Maadi, Cairo</footer></figure></div>
+    <div class="col-md-4"><figure class="quote"><span class="stars" role="img" aria-label="4 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9734;</span><blockquote class="m-0"><p>Good lamp for the price. The shade is a shade lighter than in the photo, but the light is lovely.</p></blockquote><footer><strong>Karim Fathy</strong>Smouha, Alexandria</footer></figure></div>
+    <div class="col-md-4"><figure class="quote"><span class="stars" role="img" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span><blockquote class="m-0"><p>I exchanged a basket for a larger size and it was sorted in one phone call. Simple and polite.</p></blockquote><footer><strong>Nour El-Sayed</strong>Sheikh Zayed, Giza</footer></figure></div>
+  </div></div></section>
+
+<section class="section section--stone"><div class="container"><div class="newsletter">
+  <h2>New pieces, once a month</h2><p class="text-muted-nova mb-0">Arrivals and offers by email. No daily messages.</p>
+  <form action="#" aria-label="Newsletter signup"><label class="visually-hidden" for="nl-email">Email address</label><input class="form-control" id="nl-email" type="email" placeholder="Your email address" required><button class="btn btn-nova" type="submit">Subscribe</button></form>
+</div></div></section>
+</main>
+<div id="site-footer"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@14.3.0/swiper-bundle.min.js"></script>
+<script src="js/products.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/catalog.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

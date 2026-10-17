@@ -1,0 +1,32 @@
+/* Design tokens: change the brand look here only */
+:root {
+  --c-bg: #F7F3EC;
+  --c-surface: #FFFDF9;
+  --c-stone: #EBE3D6;
+  --c-sand: #D8CCB8;
+  --c-ink: #24201C;
+  --c-muted: #6B635A;
+  --c-line: #E2D9CA;
+  --c-accent: #A94F2C;
+  --c-accent-dark: #8A3E20;
+  --c-success: #3F6B4F;
+  --c-cream: #EDE5D8;
+  --c-footer-text: #D8CFC0;
+  --c-footer-line: #3A342D;
+  --c-footer-dim: #A99F90;
+  --c-star: #9A6416;
+
+  --font-display: 'Newsreader', Georgia, serif;
+  --font-body: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 22px;
+  --shadow-sm: 0 1px 2px rgba(36, 32, 28, .06);
+  --shadow-md: 0 10px 28px rgba(36, 32, 28, .09);
+
+  --space-section: clamp(3rem, 6vw, 5rem);
+  --space-head: 1.75rem;
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  --dur: .25s;
+}

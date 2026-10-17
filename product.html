@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Product | NOVA Home</title>
+<meta name="description" content="Product details.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/pages.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body data-page="product">
+<a class="skip-link" href="#main">Skip to content</a>
+<div id="site-header"></div>
+
+<main id="main"><div class="container">
+  <div class="page-head"><nav aria-label="Breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="index.html">Home</a></li><li class="breadcrumb-item"><a href="shop.html">Shop</a></li><li class="breadcrumb-item" id="bc-cat"></li><li class="breadcrumb-item active" aria-current="page"><span id="bc-name"></span></li></ol></nav></div>
+  <div class="empty-state" id="pdp-not-found" hidden><i class="bi bi-search" aria-hidden="true"></i><h2 class="h3">Product not found</h2><p>Sorry, that product does not exist or the link is incorrect.</p><a class="btn btn-nova" href="shop.html">Back to Shop</a></div>
+  <div class="row g-4 g-lg-5 pb-5" id="pdp-detail">
+    <div class="col-lg-7"><div class="gallery"><div class="gallery__main"><img id="gallery-main" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'/%3E" width="600" height="600" alt="Product image"></div><div class="gallery__thumbs" id="gallery-thumbs"></div></div></div>
+    <div class="col-lg-5"><div class="sticky-lg">
+      <p class="text-muted-nova mb-1" id="pdp-cat"></p><h1 class="h2" id="pdp-name"></h1>
+      <p class="small my-2" id="pdp-rating"></p>
+      <p class="pdp__price my-3" id="pdp-price"></p>
+      <p class="stock"><i class="bi bi-check-circle me-1" aria-hidden="true"></i>In stock, ships within 2 working days</p>
+      <p id="pdp-desc"></p>
+      <div class="d-flex flex-wrap align-items-center gap-3 my-4" id="pdp-actions">
+        <div class="qty" role="group" aria-label="Quantity"><button id="qty-minus" type="button" aria-label="Decrease quantity">&minus;</button><output id="qty-value" aria-live="polite">1</output><button id="qty-plus" type="button" aria-label="Increase quantity">+</button></div>
+        <button class="btn btn-nova flex-grow-1" id="pdp-add" type="button">Add to cart</button>
+        <button class="btn btn-ghost" id="pdp-wish" type="button" aria-pressed="false" data-wish=""><i class="bi bi-heart me-1" aria-hidden="true"></i>Wishlist</button></div>
+      <ul class="info-list border-top pt-3">
+        <li><i class="bi bi-truck" aria-hidden="true"></i><span data-delivery-info>Delivery across Egypt.</span></li>
+        <li><i class="bi bi-cash-coin" aria-hidden="true"></i>Pay with cash on delivery.</li>
+        <li><i class="bi bi-arrow-repeat" aria-hidden="true"></i>14-day returns on unused items.</li></ul>
+      <div class="ship-est" id="ship-est">
+        <p class="ship-est__title"><i class="bi bi-truck" aria-hidden="true"></i>Check delivery</p>
+        <label class="ship-est__label" for="ship-city">Where are you located?</label>
+        <select class="form-select form-select-sm" id="ship-city"></select>
+        <p class="ship-est__result" aria-live="polite"><span class="d-block text-muted-nova small">Estimated delivery</span><strong id="ship-days"></strong><span class="d-block text-muted-nova small mt-1">Delivery fee <strong class="text-body" id="ship-fee"></strong> <span aria-hidden="true">·</span> Cash on delivery available</span><span class="d-block text-muted-nova small mt-1">Demo estimate, not a courier guarantee.</span></p>
+      </div>
+      <h2 class="h5 mt-4">Details</h2><table class="spec-table"><tbody id="pdp-specs"></tbody></table>
+    </div></div>
+  </div>
+  <section class="pb-5" aria-labelledby="rel-title"><h2 id="rel-title" class="mb-4">You may also like</h2><div class="row g-3 g-lg-4" id="related-grid"></div></section>
+  <section class="pb-5" id="recent-section" aria-labelledby="recent-title" hidden><div class="section-head"><div><p class="eyebrow">Your browsing</p><h2 id="recent-title">Recently Viewed</h2><p>Pick up where you left off.</p></div></div><div class="row g-3 g-lg-4" id="recent-grid"></div></section>
+</div></main>
+<div id="site-footer"></div>
+<div class="sticky-atc" id="sticky-atc" hidden><div class="sticky-atc__inner"><div class="sticky-atc__meta"><strong id="sticky-name"></strong><span class="sticky-atc__price"><span id="sticky-price"></span><span class="price--old" id="sticky-old" hidden></span></span></div><button class="btn btn-nova" id="sticky-add" type="button">Add to cart</button></div></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/products.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/catalog.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

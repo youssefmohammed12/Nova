@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop | NOVA Home</title>
+<meta name="description" content="Browse handcrafted decor, lighting, kitchen, storage and furniture.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/pages.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body data-page="shop">
+<a class="skip-link" href="#main">Skip to content</a>
+<div id="site-header"></div>
+
+<main id="main"><div class="container">
+  <div class="shop-header">
+    <nav aria-label="Breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Shop</li>
+      </ol>
+    </nav>
+    <div class="shop-header__content">
+      <div class="shop-header__meta">
+        <p class="eyebrow">Curated Collection</p>
+        <h1 class="shop-header__title" id="shop-title">All Pieces</h1>
+        <p class="shop-header__desc">Thoughtfully designed furniture, artisan lighting, and tactile accents handcrafted for timeless contemporary living.</p>
+      </div>
+      <nav class="cat-pills" aria-label="Category quick filter" id="cat-pills"></nav>
+    </div>
+  </div>
+
+  <div class="shop-layout pb-5">
+    <aside><div class="offcanvas-lg offcanvas-start" tabindex="-1" id="filters" aria-labelledby="filtersTitle">
+      <div class="offcanvas-header">
+        <h2 class="h5 m-0" id="filtersTitle">Filters</h2>
+        <button class="btn-close" type="button" data-bs-dismiss="offcanvas" data-bs-target="#filters" aria-label="Close filters"></button>
+      </div>
+      <div class="offcanvas-body d-block sticky-lg">
+        <div class="filter-group">
+          <label class="visually-hidden" for="f-search">Search products</label>
+          <div class="search-wrap search-wrap--shop">
+            <input class="form-control" id="f-search" type="search" placeholder="Search pieces by name..." autocomplete="off" role="combobox" aria-expanded="false" aria-controls="shopPanel" aria-autocomplete="list">
+            <div class="search-panel" id="shopPanel" role="listbox" aria-label="Search suggestions" hidden></div>
+          </div>
+        </div>
+        <fieldset class="filter-group">
+          <legend class="h3">Category</legend>
+          <div id="cat-filters"></div>
+        </fieldset>
+        <fieldset class="filter-group">
+          <legend class="h3">Material</legend>
+          <div id="material-filters">
+            <div class="form-check"><input class="form-check-input" type="radio" name="material" id="mat-all" value="all" checked><label class="form-check-label" for="mat-all">All materials</label></div>
+            <div class="form-check"><input class="form-check-input" type="radio" name="material" id="mat-wood" value="wood"><label class="form-check-label" for="mat-wood">Wood & Natural Fibers</label></div>
+            <div class="form-check"><input class="form-check-input" type="radio" name="material" id="mat-ceramic" value="ceramic"><label class="form-check-label" for="mat-ceramic">Ceramic & Stone</label></div>
+            <div class="form-check"><input class="form-check-input" type="radio" name="material" id="mat-metal" value="metal"><label class="form-check-label" for="mat-metal">Metal & Brass</label></div>
+            <div class="form-check"><input class="form-check-input" type="radio" name="material" id="mat-glass" value="glass"><label class="form-check-label" for="mat-glass">Glass & Alabaster</label></div>
+            <div class="form-check"><input class="form-check-input" type="radio" name="material" id="mat-textile" value="textile"><label class="form-check-label" for="mat-textile">Textile & Wax</label></div>
+          </div>
+        </fieldset>
+        <fieldset class="filter-group">
+          <legend class="h3">Price</legend>
+          <div class="form-check"><input class="form-check-input" type="radio" name="price" id="p-all" value="all" checked><label class="form-check-label" for="p-all">Any price</label></div>
+          <div class="form-check"><input class="form-check-input" type="radio" name="price" id="p-1" value="u600"><label class="form-check-label" for="p-1">Under EGP 600</label></div>
+          <div class="form-check"><input class="form-check-input" type="radio" name="price" id="p-2" value="m1500"><label class="form-check-label" for="p-2">EGP 600 to 1,500</label></div>
+          <div class="form-check"><input class="form-check-input" type="radio" name="price" id="p-3" value="m3000"><label class="form-check-label" for="p-3">EGP 1,500 to 3,000</label></div>
+          <div class="form-check"><input class="form-check-input" type="radio" name="price" id="p-4" value="o3000"><label class="form-check-label" for="p-4">Over EGP 3,000</label></div>
+        </fieldset>
+        <div class="filter-actions mt-3 pt-3 border-top d-flex gap-2">
+          <button class="btn btn-ghost btn-sm w-100" type="button" id="sidebar-reset">Clear all</button>
+          <button class="btn btn-nova btn-sm w-100 d-lg-none" type="button" data-bs-dismiss="offcanvas" data-bs-target="#filters">Show results</button>
+        </div>
+      </div>
+    </div></aside>
+
+    <section aria-label="Products">
+      <div class="wish-banner flex-wrap align-items-center gap-2 mb-3" id="wish-banner" hidden>
+        <i class="bi bi-heart-fill text-danger" aria-hidden="true"></i>
+        <strong>Showing your wishlist</strong>
+        <span class="text-muted-nova" data-wish-count></span>
+        <button class="btn btn-ghost btn-sm ms-auto" type="button" id="exit-wishlist">Show all products</button>
+      </div>
+
+      <div class="shop-toolbar">
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-ghost btn-sm d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#filters" aria-controls="filters">
+            <i class="bi bi-sliders me-1" aria-hidden="true"></i>Filters
+          </button>
+          <p class="m-0 text-muted-nova" id="result-count" aria-live="polite"></p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <label class="small text-muted-nova" for="f-sort">Sort by</label>
+          <select class="form-select form-select-sm w-auto" id="f-sort">
+            <option value="featured">Featured</option>
+            <option value="new">New arrivals</option>
+            <option value="low">Price: low to high</option>
+            <option value="high">Price: high to low</option>
+            <option value="alpha">Name: A to Z</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="active-filters mb-3" id="active-filters" hidden></div>
+
+      <div class="row g-3 g-lg-4" id="shop-grid"></div>
+    </section>
+  </div>
+</div></main>
+
+<div id="site-footer"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/products.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/catalog.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

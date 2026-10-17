@@ -1,0 +1,59 @@
+# NOVA Home — Git hygiene
+# Prepared for public GitHub publication (2026-10-17).
+# Verify with: git check-ignore -v <path>
+
+# ── Local configuration and secrets ──────────────────────────────────────────
+# The real local config holds DB credentials and machine-specific values.
+# Never commit it. Tracked template: config/config.example.php
+config/config.php
+# Environment files (the app uses config/config.php, not .env — excluded defensively)
+.env
+.env.*
+!.env.example
+# Keys, certificates, tokens
+*.pem
+*.key
+*.p12
+*.pfx
+
+# ── Database backups and local data ──────────────────────────────────────────
+# Backups may contain customer records, order addresses, and password hashes.
+# TRACKED database files (safe clean-install inputs, reviewed):
+#   database/schema.sql, database/seed.sql, database/migrations/*.sql
+database/backups/
+*.sql.gz
+*.sql.zip
+*.sql.tar*
+# Local customer/data exports
+exports/
+*.csv.bak
+
+# ── Dependencies and generated test artifacts ────────────────────────────────
+# Dev-only (screenshots, Playwright audit). Normal runtime needs no Node build.
+node_modules/
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+
+# ── Local screenshots (README gallery lives in docs/screenshots/) ────────────
+/screenshots/
+
+# ── Internal development records (kept locally; not public documentation) ─────
+docs/development/GITHUB_PREPARATION_REPORT.md
+
+# ── Logs, cache, temporary files ─────────────────────────────────────────────
+*.log
+php_error_log*
+error_log*
+*.tmp
+*.bak
+*.swp
+*~
+
+# ── OS / editor metadata ─────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.code-workspace

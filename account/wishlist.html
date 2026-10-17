@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wishlist | NOVA Home</title>
+<meta name="description" content="Your saved NOVA Home pieces.">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/pages.css">
+<link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body data-page="account-wishlist">
+<a class="skip-link" href="#main">Skip to content</a>
+<div id="site-header"></div>
+<main id="main"><div class="container pb-5">
+  <div class="page-head account-head">
+    <nav aria-label="Breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="../index.html">Home</a></li>
+        <li class="breadcrumb-item"><a href="index.php">My account</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Wishlist</li>
+      </ol>
+    </nav>
+    <p class="eyebrow">My shopping space</p>
+    <h1>Wishlist</h1>
+    <p class="text-muted-nova mb-0" id="wish-sub">Saved pieces stored in your personal collection.</p>
+  </div>
+  <div class="account-layout">
+    <aside class="account-side" aria-label="Account navigation">
+      <div class="account-user-card" id="wish-user-card">
+        <div class="account-avatar" id="wish-avatar" aria-hidden="true"><i class="bi bi-heart" style="font-size: 1.15rem;"></i></div>
+        <div class="account-user-meta">
+          <div class="account-user-name" id="wish-user-name">Wishlist</div>
+          <div class="account-user-email" id="wish-user-email">Saved items</div>
+        </div>
+      </div>
+      <nav id="wish-side-nav">
+        <a href="index.php"><i class="bi bi-grid-1x2" aria-hidden="true"></i><span>Dashboard</span></a>
+        <a href="orders.php"><i class="bi bi-box-seam" aria-hidden="true"></i><span>Orders</span></a>
+        <a href="wishlist.html" aria-current="page"><i class="bi bi-heart" aria-hidden="true"></i><span>Wishlist</span></a>
+        <a href="addresses.php"><i class="bi bi-geo-alt" aria-hidden="true"></i><span>Addresses</span></a>
+        <a href="profile.php"><i class="bi bi-person" aria-hidden="true"></i><span>Profile</span></a>
+        <a href="../shop.html"><i class="bi bi-shop" aria-hidden="true"></i><span>Continue shopping</span></a>
+      </nav>
+    </aside>
+    <div class="account-main">
+      <div class="row g-3 g-lg-4" id="account-wish-grid"></div>
+      <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+        <a class="btn btn-ghost btn-sm" href="../shop.html?wish=1"><i class="bi bi-grid me-1" aria-hidden="true"></i>Open wishlist in shop view</a>
+        <a class="btn btn-nova btn-sm" href="../shop.html">Explore more pieces</a>
+      </div>
+    </div>
+  </div>
+</div></main>
+<div id="site-footer"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/products.js"></script>
+<script src="../js/settings.js"></script>
+<script src="../js/catalog.js"></script>
+<script src="../js/cart.js"></script>
+<script src="../js/ui.js"></script>
+<script src="../js/main.js"></script>
+<script>
+(function() {
+  document.addEventListener('auth:change', function(e) {
+    var auth = e.detail;
+    var nameEl = document.getElementById('wish-user-name');
+    var emailEl = document.getElementById('wish-user-email');
+    var avatarEl = document.getElementById('wish-avatar');
+    var navEl = document.getElementById('wish-side-nav');
+    if (auth && auth.authenticated && auth.customer) {
+      if (nameEl) nameEl.textContent = auth.customer.name;
+      if (emailEl) emailEl.textContent = auth.customer.email;
+      if (avatarEl) {
+        var parts = auth.customer.name.trim().split(/\s+/);
+        var inits = parts[0] ? parts[0].charAt(0).toUpperCase() : 'C';
+        if (parts.length > 1 && parts[parts.length - 1]) inits += parts[parts.length - 1].charAt(0).toUpperCase();
+        avatarEl.textContent = inits;
+      }
+      if (navEl && !navEl.querySelector('.cust-logout-btn')) {
+        var outLink = document.createElement('a');
+        outLink.href = 'logout.php';
+        outLink.className = 'cust-logout-btn text-danger';
+        outLink.innerHTML = '<i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Sign out</span>';
+        navEl.appendChild(outLink);
+      }
+    }
+  });
+})();
+</script>
+</body>
+</html>
