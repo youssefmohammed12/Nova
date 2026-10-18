@@ -279,8 +279,8 @@ nova-home/
 │       └── products/<slug>/main.webp    # 14 licensed photographs — see docs/IMAGE_SOURCES.md
 │
 ├── config/                  # Configuration — DB credentials stay OUT of Git
-│   ├── config.php           # LOCAL ONLY (git-ignored): env, debug, demo_access, db, base_url, business
-│   ├── config.example.php   # Tracked template — copy to config.php for local dev (demo_access => false)
+│   ├── config.php           # LOCAL ONLY (git-ignored): env, debug, demo_access, public_demo_access, db, base_url, business
+│   ├── config.example.php   # Tracked template — copy to config.php for local dev (demo_access + public_demo_access => false)
 │   └── database.php         # nova_db(): single PDO factory (exceptions, assoc, real prepares, utf8mb4)
 │
 ├── includes/                # Shared PHP (no business logic)
@@ -295,16 +295,19 @@ nova-home/
 ├── database/                # Init scripts (rerunnable)
 │   ├── schema.sql           # CREATE DATABASE nova_home + 10 tables, FKs, CHECKs
 │   ├── seed.sql             # 5 categories, 14 products, 14 images, 42 specs, 6 settings
+│   ├── demo-data.infinityfree.sql    # phpMyAdmin: dedicated demo customer + admin (idempotent)
+│   ├── demo-reset.infinityfree.sql   # phpMyAdmin: destructive demo-DB reset step 1
 │   ├── migrations/          # Historical migrations (fresh installs need schema.sql only)
 │   └── backups/             # LOCAL ONLY, git-ignored — may contain customer/order data
 │
 ├── docs/                    # Documentation
 │   ├── IMAGE_SOURCES.md     # Photography provenance & licensing (tracked)
 │   ├── screenshots/         # README screenshot gallery (tracked)
-│   └── development/         # LOCAL ONLY, git-ignored: GITHUB_PREPARATION_REPORT.md
+│   └── development/         # Deployment runbooks (tracked) + local-only notes (git-ignored)
 ├── api/                     # JSON endpoints: categories, products, product, orders, order, csrf,
 │                            # admin-login, customer auth/profile/addresses, store-settings,
-│                            # plus dev-gated demo-customer / demo-admin sign-in
+│                            # dev-gated demo sign-in, and PUBLIC demo sign-in
+│                            # (public-demo-customer / public-demo-admin)
 ├── scripts/                 # CLI-only utilities (web access denied): create_admin, seed_demo_customer,
 │                            # cleanup/test/inspection scripts, Playwright audit, capture_screenshots
 ├── health.php               # Dev-only infra probe: JSON in development, 404 otherwise
@@ -1117,7 +1120,7 @@ A Lighthouse run was performed under **local development conditions** (simulated
 | Output escaping helper | `includes/functions.php` → `e()`; used in `header.php`/`footer.php` | `htmlspecialchars(ENT_QUOTES | ENT_SUBSTITUTE, UTF-8)` |
 | Secure session defaults | `includes/bootstrap.php` → `nova_session()` (lazy) | HttpOnly, SameSite=Lax, Secure-when-HTTPS; no session started unless needed |
 | No plaintext passwords | `admin_users.password_hash` column; 0 rows seeded | Dev-account process deferred to auth phase; never commit secrets |
-| Secrets out of Git | `config/config.php` git-ignored; `.gitignore` excludes DB backups, logs, `node_modules/`, test artifacts | Only `config.example.php` tracked (with `demo_access => false`); the project is now a Git repository (initialized 2026-10-17, no commits made during preparation) |
+| Secrets out of Git | `config/config.php` git-ignored; `.gitignore` excludes DB backups, logs, `node_modules/`, test artifacts | Only `config.example.php` tracked (with `demo_access => false` and `public_demo_access => false`); the project is now a Git repository (initialized 2026-10-17, no commits made during preparation) |
 | CSRF foundation | `nova_csrf_token()` / `nova_csrf_field()` / `nova_verify_csrf()` | Implemented, not yet wired to forms (no POST forms exist in Phase 1) |
 
 ### Future Backend Security Requirements (planned — mandatory, still open)
@@ -1278,7 +1281,7 @@ REMOVED (Phase 2): the legacy products.js static 14-record array
 
 | File | Responsibility |
 | :--- | :--- |
-| `config/config.example.php` ✅ | Tracked template: env/debug, db params, `base_url => null` (auto-detect), business fallbacks |
+| `config/config.example.php` ✅ | Tracked template: env/debug, db params, `base_url => null` (auto-detect), business fallbacks, `demo_access => false` + `public_demo_access => false` |
 | `config/config.php` ✅ | Local-only XAMPP values; git-ignored via `.gitignore` — never commit |
 | `config/database.php` ✅ | `nova_db()`: PDO only, exceptions, assoc fetch, real prepares, utf8mb4 DSN |
 | `includes/bootstrap.php` ✅ | Config load (+fallback), error policy, lazy secure session, requires DB+helpers, `nova_pdo()` |
@@ -1416,6 +1419,7 @@ Chronological record of major completed stages. This is for navigation, not a Gi
 | **Demo Sign-In & Dev Accounts** | Development-only one-click demo sign-in for both customer and admin portals: (1) `scripts/seed_demo_customer.php` (CLI-only, rerun-safe) creates dedicated demo customer `demo.customer@novahome.eg` (Sarah El-Masry) with 2 saved addresses (Home/Office in Cairo), 5 sample orders across all statuses (delivered/shipped/confirmed/pending/cancelled) using real catalog products, and suggested wishlist product IDs; demo orders identified by `notes='NOVA_DEMO_ORDER'` marker; (2) `api/demo-customer-login.php` — dev-only POST endpoint guarded by `NOVA_ENV==='development'` AND `config.demo_access===true` AND valid CSRF; uses `nova_customer_login()` for proper session establishment with `session_regenerate_id(true)`; returns wishlist product IDs for localStorage population; (3) `api/demo-admin-login.php` — dev-only POST endpoint with identical guards; authenticates as first active admin via `nova_admin_login()` without hardcoding or transmitting passwords; (4) `account/login.php` updated with server-rendered demo section (`$demoEnabled` PHP check) showing "Explore Demo Account" button with spinner and error handling; (5) `admin/login.php` updated with "Demo Admin Access" button in same pattern; (6) `config/config.php` extended with `'demo_access' => true` flag; (7) CSS: `.demo-access-card` (dashed border, stone background) and `.btn-outline-nova` added to `css/pages.css`; (8) Production safety verified: server returns 403 when `demo_access=false` or `env!=='development'`, buttons not rendered server-side; (9) Playwright: 14/14 passed covering button visibility, sign-in flows, dashboard data, orders, addresses, wishlist localStorage, logout, session isolation, CSRF rejection, and zero console errors on both login pages. |
 | **GitHub Publication Preparation** | Repository safety and deployment documentation (2026-10-17): (1) `git init` (branch `main`) — the project had never been a Git repository; **no commits or pushes** were made during preparation; (2) comprehensive `.gitignore` excluding local `config/config.php`, `.env` files, `database/backups/` (contains customer/order records + hashes), `node_modules/`, Playwright/test artifacts, local `screenshots/` working files, logs, and OS/editor noise — while keeping `database/schema.sql`, `database/seed.sql`, migrations, docs, screenshots gallery, and all application source tracked; (3) `config/config.example.php` rewritten with full setup documentation and `'demo_access' => false` by default; (4) runtime cleanup: hardcoded `/nova-home/nova-home/` fallback removed from `nova_base_url()` and the header/footer partials (neutral `/` fallback; auto-detection unchanged); (5) bug fixes: `admin/order.php` Customer Account row read a nonexistent `user_id` column (now `customer_id` — eliminated an exposed PHP warning containing the local Windows path and an always-"Guest Checkout" label), demo wishlist now seeded with slug ids (`luna-floor-lamp`, `halo-mirror`, `oasis-pendant`, `aswan-side-table`) because numeric legacy ids stopped resolving after Phase 2, `health.php` image expectation corrected 42→14 after the single-image photography migration (health returns `ok` again); (6) real screenshot gallery captured from the running app into `docs/screenshots/` (23 images via Playwright, demo-only synthetic data, server-side-filtered admin orders, blurred non-demo dashboard names, no orders created); (7) public `README.md` created (features, stack, screenshot gallery, verified setup steps, demo access, architecture, attribution, security rules, limitations, deployment checklist) with no live-demo link since the app is not deployed; (8) `PROJECT_GUIDE.md` accuracy pass (§2 status, §5 stack, §7 folder tree, §22 git row, §25 known issues, §26 migration map + local dev, §28 changelog, §29 roadmap); (9) `GITHUB_PREPARATION_REPORT.md` added. |
 | **Documentation Folder Organization** | Pre-commit documentation layout cleanup (2026-10-17): (1) `IMAGE_SOURCES.md` moved to `docs/IMAGE_SOURCES.md` (still tracked; README + guide links updated); (2) `GITHUB_PREPARATION_REPORT.md` moved to `docs/development/GITHUB_PREPARATION_REPORT.md` and added to `.gitignore` as a local-only internal record — kept on disk, removed from the staged index; (3) folder trees in README/guide updated to the new `docs/` layout; (4) application structure, routes, base-path detection, and the 23-image `docs/screenshots/` gallery untouched; no commits made. |
+| **InfinityFree Public Demo** | Interactive hosted-portfolio demo (2026-10-17), separate from the dev-only demo: (1) new config switch `public_demo_access` (default `false` in the tracked example) — works with `env=production`/`debug=false`, fully independent of `demo_access`; (2) new endpoints `api/public-demo-customer-login.php` + `api/public-demo-admin-login.php`, gated ONLY on `public_demo_access===true` + POST + CSRF; they sign in FIXED identities (`demo.customer@novahome.eg`, `demo.admin@novahome.eg`) — no id/email/role from the client, never "the first admin", never the owner's personal account; both use `nova_customer_login()`/`nova_admin_login()` so sessions, regeneration, `require_*()` authorization, and logout separation are unchanged; (3) `account/login.php` + `admin/login.php` render the demo buttons when EITHER switch is on (public wins for endpoint/label), with shared-mutable-data and editable-environment notices in public mode; (4) `database/demo-data.infinityfree.sql` — phpMyAdmin-friendly (no CREATE DATABASE/USE), insert-only + NOT EXISTS guards resolving by email/slug, creates the demo customer, 2 addresses, 5 sample orders (all statuses, refs `NH-YYYYMMDD-DEA1xx`) and 9 line items with totals recomputed from catalog+settings, plus the dedicated demo admin (bcrypt hash, plaintext undisclosed); safe to re-import, skips creation when the demo customer already has orders; (5) `database/demo-reset.infinityfree.sql` — destructive demo-DB-only reset step; documented 3-step phpMyAdmin reset sequence (reset → seed.sql → demo-data) restores the full baseline (5 categories / 14 products / 14 images / 42 specs / 6 settings / demo accounts / 2 addresses / 5 orders + 9 items); (6) README gained a Live demo section with the two entry-point links + public-demo documentation; `docs/development/INFINITYFREE_DEMO_SETUP.md` runbook added; (7) verified on an isolated production-style instance (`env=production`, `debug=false`) against a disposable DB: buttons render/hide with the switch, both sign-ins 200, wishlist slugs returned, all customer + admin pages 200, product/order/category/settings mutations persist, logout 302s, config-off → buttons gone + endpoints 403, dev endpoints stay 403 in production, health 404, SQL idempotent on double import, and the 3-step reset restored a mutated DB to baseline. |
 
 ---
 

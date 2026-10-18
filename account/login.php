@@ -12,7 +12,15 @@ if (nova_customer_user() !== null) {
     exit;
 }
 $csrfToken = nova_csrf_token();
-$demoEnabled = (NOVA_ENV === 'development' && nova_config('demo_access', false) === true);
+// Two independent demo switches: development-only (demo_access) and the
+// hosted public demo (public_demo_access). Public wins for the button so the
+// live demo works with env=production, debug=false.
+$devDemo = (NOVA_ENV === 'development' && nova_config('demo_access', false) === true);
+$publicDemo = (nova_config('public_demo_access', false) === true);
+$demoEnabled = ($devDemo || $publicDemo);
+$demoEndpoint = $publicDemo ? '../api/public-demo-customer-login.php' : '../api/demo-customer-login.php';
+$demoLabel = $publicDemo ? 'Explore Customer Demo' : 'Explore Demo Account';
+$demoKicker = $publicDemo ? 'Public demo' : 'Development mode';
 $pageTitle = 'Sign in | NOVA Home';
 ?>
 <!DOCTYPE html>
@@ -54,11 +62,14 @@ $pageTitle = 'Sign in | NOVA Home';
     </div>
 <?php if ($demoEnabled): ?>
     <div class="demo-access-card mt-4 text-center" data-reveal>
-      <p class="small text-muted-nova mb-2"><i class="bi bi-wrench me-1" aria-hidden="true"></i>Development mode</p>
+      <p class="small text-muted-nova mb-2"><i class="bi bi-wrench me-1" aria-hidden="true"></i><?= e($demoKicker) ?></p>
       <h2 class="h6 mb-2">Try the demo</h2>
       <p class="small text-muted-nova mb-3">Explore a fully populated customer account with sample orders, addresses, and wishlist items.</p>
-      <button class="btn btn-outline-nova w-100" type="button" id="demo-cust-btn" data-csrf="<?= e($csrfToken) ?>">
-        <i class="bi bi-person-badge me-2" aria-hidden="true"></i>Explore Demo Account
+      <?php if ($publicDemo): ?>
+      <p class="small mb-3"><strong>Shared demo account.</strong> Synthetic sample data only — other visitors may change it and it can be reset. Please don't enter real personal or payment details.</p>
+      <?php endif; ?>
+      <button class="btn btn-outline-nova w-100" type="button" id="demo-cust-btn" data-csrf="<?= e($csrfToken) ?>" data-endpoint="<?= e($demoEndpoint) ?>" data-label="<?= e($demoLabel) ?>">
+        <i class="bi bi-person-badge me-2" aria-hidden="true"></i><?= e($demoLabel) ?>
       </button>
       <p class="alert alert-danger mt-2 small" id="demo-cust-error" hidden role="alert"></p>
     </div>
@@ -102,16 +113,18 @@ $pageTitle = 'Sign in | NOVA Home';
     }).catch(function () { fail('Could not reach the server. Please try again.'); });
   });
 })();
-// Demo customer sign-in (development only)
+// Demo customer sign-in (server-gated: development demo_access OR public_demo_access)
 (function () {
   var btn = document.getElementById('demo-cust-btn');
   if (!btn) return;
   var errBox = document.getElementById('demo-cust-error');
+  var label = btn.dataset.label || 'Explore Demo Account';
+  var icon = '<i class="bi bi-person-badge me-2" aria-hidden="true"></i>';
   btn.addEventListener('click', function () {
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Signing in…';
     errBox.hidden = true;
-    fetch('../api/demo-customer-login.php', {
+    fetch(btn.dataset.endpoint || '../api/demo-customer-login.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ csrf_token: btn.dataset.csrf })
@@ -129,12 +142,12 @@ $pageTitle = 'Sign in | NOVA Home';
       errBox.textContent = (res.j && res.j.error) || 'Demo sign-in failed.';
       errBox.hidden = false;
       btn.disabled = false;
-      btn.innerHTML = '<i class="bi bi-person-badge me-2" aria-hidden="true"></i>Explore Demo Account';
+      btn.innerHTML = icon + label;
     }).catch(function () {
       errBox.textContent = 'Could not reach the server.';
       errBox.hidden = false;
       btn.disabled = false;
-      btn.innerHTML = '<i class="bi bi-person-badge me-2" aria-hidden="true"></i>Explore Demo Account';
+      btn.innerHTML = icon + label;
     });
   });
 })();

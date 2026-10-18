@@ -12,7 +12,16 @@ if (nova_admin_user() !== null) {
     exit;
 }
 $csrfToken = nova_csrf_token();
-$demoEnabled = (NOVA_ENV === 'development' && nova_config('demo_access', false) === true);
+// Two independent demo switches: development-only (demo_access) and the
+// hosted public demo (public_demo_access). Public wins for the button so the
+// live demo works with env=production, debug=false. Both sign in the
+// DEDICATED demo administrator rows — never the owner's personal account.
+$devDemo = (NOVA_ENV === 'development' && nova_config('demo_access', false) === true);
+$publicDemo = (nova_config('public_demo_access', false) === true);
+$demoEnabled = ($devDemo || $publicDemo);
+$demoEndpoint = $publicDemo ? '../api/public-demo-admin-login.php' : '../api/demo-admin-login.php';
+$demoLabel = $publicDemo ? 'Explore Admin Demo' : 'Demo Admin Access';
+$demoKicker = $publicDemo ? 'Public demo' : 'Development mode';
 $pageTitle = 'Admin Sign In | NOVA Home';
 ?>
 <!DOCTYPE html>
@@ -87,9 +96,12 @@ $pageTitle = 'Admin Sign In | NOVA Home';
 
 <?php if ($demoEnabled): ?>
     <div class="mt-3 pt-3 border-top text-center">
-      <p class="small text-muted-nova mb-2"><i class="bi bi-wrench me-1" aria-hidden="true"></i>Development mode</p>
-      <button class="btn btn-outline-secondary w-100 py-2" type="button" id="demo-admin-btn" data-csrf="<?= e($csrfToken) ?>">
-        <i class="bi bi-shield-check me-2" aria-hidden="true"></i>Demo Admin Access
+      <p class="small text-muted-nova mb-2"><i class="bi bi-wrench me-1" aria-hidden="true"></i><?= e($demoKicker) ?></p>
+      <?php if ($publicDemo): ?>
+      <p class="small mb-2"><strong>Editable demonstration environment.</strong> The full admin tools work on shared demo data — other visitors can change it and it may be reset at any time.</p>
+      <?php endif; ?>
+      <button class="btn btn-outline-secondary w-100 py-2" type="button" id="demo-admin-btn" data-csrf="<?= e($csrfToken) ?>" data-endpoint="<?= e($demoEndpoint) ?>" data-label="<?= e($demoLabel) ?>">
+        <i class="bi bi-shield-check me-2" aria-hidden="true"></i><?= e($demoLabel) ?>
       </button>
       <p class="alert alert-danger mt-2 small" id="demo-admin-error" hidden role="alert"></p>
     </div>
@@ -158,16 +170,18 @@ $pageTitle = 'Admin Sign In | NOVA Home';
     });
   });
 })();
-// Demo admin sign-in (development only)
+// Demo admin sign-in (server-gated: development demo_access OR public_demo_access)
 (function () {
   var btn = document.getElementById('demo-admin-btn');
   if (!btn) return;
   var errBox = document.getElementById('demo-admin-error');
+  var label = btn.dataset.label || 'Demo Admin Access';
+  var icon = '<i class="bi bi-shield-check me-2" aria-hidden="true"></i>';
   btn.addEventListener('click', function () {
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Signing in…';
     errBox.hidden = true;
-    fetch('../api/demo-admin-login.php', {
+    fetch(btn.dataset.endpoint || '../api/demo-admin-login.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ csrf_token: btn.dataset.csrf })
@@ -181,12 +195,12 @@ $pageTitle = 'Admin Sign In | NOVA Home';
       errBox.textContent = (res.j && res.j.error) || 'Demo sign-in failed.';
       errBox.hidden = false;
       btn.disabled = false;
-      btn.innerHTML = '<i class="bi bi-shield-check me-2" aria-hidden="true"></i>Demo Admin Access';
+      btn.innerHTML = icon + label;
     }).catch(function () {
       errBox.textContent = 'Could not reach the server.';
       errBox.hidden = false;
       btn.disabled = false;
-      btn.innerHTML = '<i class="bi bi-shield-check me-2" aria-hidden="true"></i>Demo Admin Access';
+      btn.innerHTML = icon + label;
     });
   });
 })();

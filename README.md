@@ -5,7 +5,37 @@ A full-stack furniture and home-decor e-commerce website for the Egyptian market
 NOVA Home was built as a **full-stack portfolio project** to demonstrate production-style engineering across a real e-commerce flow: server-rendered account and admin areas, a JSON API driving a vanilla-JS storefront, session-based authentication, and a documented MySQL schema with safe seed data.
 
 > [!IMPORTANT]
-> **This project is not deployed publicly yet.** It runs locally during development. GitHub hosts the source code only — GitHub Pages cannot execute the PHP/MySQL backend. A live demo link will be added here once a real hosting deployment exists.
+> **Cash on Delivery is the only checkout method** — there is no online payment gateway. NOVA Home is a **portfolio demonstration**, not a commercial store. An interactive public demo is hosted on InfinityFree (see [Live demo](#live-demo)); its accounts use **shared, mutable demonstration data** that visitors can change and that may be reset.
+
+---
+
+## Live demo
+
+A hosted, **interactive** demonstration runs on InfinityFree. Both routes lead
+to the standard login pages, where one-click demo buttons appear once the
+public-demo configuration is enabled on the server.
+
+| Entry point | Link |
+| :--- | :--- |
+| **Explore Customer Demo** | [nova-home.fast-page.org/account/login.php](https://nova-home.fast-page.org/account/login.php) |
+| **Explore Admin Demo** | [nova-home.fast-page.org/admin/login.php](https://nova-home.fast-page.org/admin/login.php) |
+
+- The **customer** demo signs into a synthetic example account (`Sarah El-Masry`)
+  with sample orders, saved addresses, and a populated wishlist.
+- The **admin** demo signs into a dedicated demonstration administrator with the
+  **normal management functionality** — products, categories, order statuses,
+  and store settings all work and persist.
+- Both accounts share **mutable demonstration data**. Visitors can change it,
+  and it may be reset periodically — changes made by others can appear in your
+  session, and a reset can remove them.
+- Please **do not enter real sensitive personal or payment information**. This
+  is a portfolio showcase; use the demo identities, not your own details.
+- Checkout is **Cash on Delivery** only. The live database and private
+  configuration are never part of this repository.
+
+The public demo is powered by a separate `public_demo_access` setting and
+dedicated demo endpoints — see [Demo access](#demo-access) and the
+[deployment notes](docs/development/INFINITYFREE_DEMO_SETUP.md).
 
 ---
 
@@ -228,7 +258,8 @@ Then review `config/config.php` for your machine:
 | :--- | :--- | :--- |
 | `env` | `'development'` | Use `'production'` on a live server |
 | `debug` | `true` locally | Must be `false` in production (controls on-screen error display) |
-| `demo_access` | `false` in the template | Set `true` locally if you want one-click demo sign-in. **Never in production.** |
+| `demo_access` | `false` in the template | Development-only one-click demo. Requires `env => 'development'` too. **Never enable in production.** |
+| `public_demo_access` | `false` in the template | Public one-click demo for the hosted portfolio demo. Independent of `env`/`debug`. Set `true` only on the intentional public demo. |
 | `db.*` | Stock XAMPP defaults (`root`, empty password, `nova_home`) | Change to your own database user/password |
 | `base_url` | `null` (auto-detect) | Works at any local path. Set explicitly in production, e.g. `'/'` or `'/shop/'` |
 
@@ -295,13 +326,48 @@ This creates the synthetic demo customer, two saved addresses, and five sample o
 
 ## Demo access
 
-Development-only shortcuts exist so reviewers can explore the finished flows without registering:
+There are **two independent demo switches**, enforced server-side. Neither can be
+enabled by manipulating a URL or a client-side variable — the API handlers
+reject the request unless the configuration says so.
 
-- **Explore Demo Account** (customer login) and **Demo Admin Access** (admin login) appear as one-click buttons — **only** when the local configuration sets `env => 'development'` **and** `demo_access => true`. The committed example ships with `demo_access => false`, and the server-side handlers return `403` unless both conditions hold, so manipulating URLs or client-side variables cannot enable them.
-- Demo data is created by `php scripts/seed_demo_customer.php` (CLI-only, safe to re-run): a dedicated synthetic customer with sample orders across every status, two saved addresses, and a populated wishlist. No real person's data is involved.
-- **One-click administrator authentication must remain disabled on any public production deployment.** Keep `demo_access => false` (the default) and set `env => 'production'`.
-- There is no shared or default password to document: demo sign-in establishes a server-side session, and real accounts always authenticate through bcrypt-verified passwords.
-- With the demo customer you can explore the dashboard, order history, order detail, address book, profile, and wishlist; with the demo administrator you can explore every management screen against safe demonstration data.
+### Development-only demo (local)
+
+- **Explore Demo Account** (customer login) and **Demo Admin Access** (admin
+  login) appear as one-click buttons **only** when `env => 'development'` **and**
+  `demo_access => true`. The committed example ships with `demo_access => false`
+  and the handlers return `403` unless both hold.
+- Demo data is created by `php scripts/seed_demo_customer.php` (CLI-only, safe to
+  re-run): a dedicated synthetic customer with sample orders across every status,
+  two saved addresses, and a populated wishlist. No real person's data is involved.
+- Keep `demo_access => false` (the default) and `env => 'production'` on any
+  public deployment.
+
+### Public hosted demo (InfinityFree)
+
+- **Explore Customer Demo** and **Explore Admin Demo** appear on the live login
+  pages **only** when `public_demo_access => true`. This switch is **independent
+  of `env`/`debug`**, so the public demo runs on a normal production
+  configuration (`env => 'production'`, `debug => false`).
+- The public endpoints (`api/public-demo-customer-login.php`,
+  `api/public-demo-admin-login.php`) sign in **fixed synthetic identities**
+  (`demo.customer@novahome.eg` / `demo.admin@novahome.eg`) created by
+  `database/demo-data.infinityfree.sql`. No customer id, email, or role can be
+  supplied by the client, and the admin demo is never "the first admin in the
+  table" nor the owner's personal account.
+- The admin demo has **full, normal administrative capability** (not read-only):
+  visitors can create/edit products, change visibility, manage categories, move
+  order statuses, and change store settings. Because the data is shared and
+  mutable, it can be reset — see the
+  [deployment runbook](docs/development/INFINITYFREE_DEMO_SETUP.md).
+- **Recommended public-demo production set:**
+  `'env' => 'production'`, `'debug' => false`, `'demo_access' => false`,
+  `'public_demo_access' => true`. Turn `public_demo_access` off to remove the
+  buttons and reject the endpoints entirely.
+
+There is no shared or default password to document: demo sign-in establishes a
+server-side session, and real accounts always authenticate through
+bcrypt-verified passwords. Both demo accounts use synthetic fixtures — do not
+enter real personal or payment information into the public demo.
 
 ---
 
@@ -350,7 +416,8 @@ Configuration rules that apply to every environment:
 
 - **`config/config.php` must never be committed.** It is git-ignored; the tracked `config/config.example.php` contains only safe placeholders. Real secrets belong on the hosting environment only.
 - **Database backups must never be published.** `database/backups/` is git-ignored precisely because dumps can contain customer records and password hashes. The tracked `database/schema.sql` and `database/seed.sql` are the supported way to build an install — they contain no personal data.
-- **Demo access must remain disabled in production** (`demo_access => false`, the shipped default, plus `env => 'production'`). Both conditions are enforced inside the API handlers themselves.
+- **Development demo access must remain disabled in production** (`demo_access => false`, the shipped default, plus `env => 'production'`). Both conditions are enforced inside the API handlers themselves.
+- **The public demo is a separate, deliberate opt-in.** `public_demo_access => true` enables one-click sign-in for the two dedicated demo identities and is intended only for the intentional portfolio demonstration. Keep it `false` on any deployment that is not the public demo. Turning it off removes the buttons and makes the public demo endpoints return `403`. It does not affect the dev-only demo switch, order-ownership checks, CSRF, or any authorization guard.
 - **HTTPS is required for live hosting**, together with production-grade database credentials on a dedicated least-privilege MySQL user.
 - **PHP error display must be off publicly**: `env => 'production'` and `debug => false` keep errors in the server-side log instead of the response.
 - Private configuration and SQL files are additionally shielded by `.htaccess` (`Require all denied`). These rules only apply when Apache honors `.htaccess` (`AllowOverride` enabled) — on servers that ignore them, rely on placing the project outside the public web root or blocking those paths at the server level.
@@ -379,7 +446,8 @@ NOVA Home is **prepared for GitHub publication and documented for future deploym
 - [ ] Create the production database and a dedicated least-privilege database user
 - [ ] Upload the codebase (excluding local-only `config/config.php`, `database/backups/`, `node_modules/`, and logs — `.gitignore` already excludes them)
 - [ ] Create `config/config.php` from the example with production credentials, `env => 'production'`, `debug => false`, and an explicit `base_url`
-- [ ] Confirm `demo_access` stays `false` (the default) — one-click admin/customer demo sign-in must be impossible
+- [ ] Confirm `demo_access` stays `false` (the default) — the development-only demo must be impossible in production
+- [ ] Decide on the public demo: leave `public_demo_access => false` (no demo buttons, endpoints `403`), or set it `true` **only** on the intentional portfolio demo (see `docs/development/INFINITYFREE_DEMO_SETUP.md`) and import `database/demo-data.infinityfree.sql` via phpMyAdmin
 - [ ] Apply `database/schema.sql` + `database/seed.sql` (and any newer migrations) to the production database; create the administrator via the CLI script or a secure one-off
 - [ ] Enable HTTPS and verify session cookies carry the `Secure` flag
 - [ ] Verify `.htaccess` protection is honored (or replicate the deny rules in server config) — confirm `config/`, `database/`, `includes/`, and `scripts/` return 403/404
@@ -393,3 +461,4 @@ NOVA Home is **prepared for GitHub publication and documented for future deploym
 
 - **[PROJECT_GUIDE.md](PROJECT_GUIDE.md)** — the deep development guide: architecture, data models, business rules, security rules, testing policy, and full changelog
 - **[docs/IMAGE_SOURCES.md](docs/IMAGE_SOURCES.md)** — photography provenance and licensing
+- **[docs/development/INFINITYFREE_DEMO_SETUP.md](docs/development/INFINITYFREE_DEMO_SETUP.md)** — public demo deployment runbook: files to upload, SQL import order, enabling `public_demo_access`, and the demo-reset procedure

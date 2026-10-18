@@ -23,7 +23,11 @@
  * env + debug      'development' | 'production'. Production MUST use
  *                  'env' => 'production' and 'debug' => false so PHP errors
  *                  are logged server-side and never displayed to visitors.
- * demo_access      One-click demo sign-in switch (see below). Keep false.
+ * demo_access      Development-only one-click demo sign-in switch (see below).
+ *                  Keep false.
+ * public_demo_access  PUBLIC one-click demo switch for the hosted portfolio
+ *                  demonstration (see below). Keep false except on the
+ *                  intentional public demo site.
  *
  * ── Development-only demo sign-in ──────────────────────────────────────────
  * The demo customer/admin shortcuts (`api/demo-customer-login.php`,
@@ -34,6 +38,19 @@
  * demo sign-in — even if a URL or client-side variable is manipulated, the
  * handlers return 403 unless both conditions hold. Only enable this in a
  * local development config; NEVER enable it on a public production server.
+ *
+ * ── Public (hosted) demo sign-in ───────────────────────────────────────────
+ * A SEPARATE switch powers the interactive portfolio demonstration:
+ *   `api/public-demo-customer-login.php` and `api/public-demo-admin-login.php`
+ *   require ONLY 'public_demo_access' => true — they are independent of env
+ *   and debug, so the public demo runs on a normal production configuration
+ *   (env=production, debug=false). They sign in FIXED synthetic identities
+ *   (demo.customer@novahome.eg / demo.admin@novahome.eg) established by
+ *   `database/demo-data.infinityfree.sql`; no id, email, or role can be
+ *   supplied by the client. Keep false everywhere except the intentional
+ *   public demonstration. Recommended public-demo production set:
+ *     'env' => 'production', 'debug' => false,
+ *     'demo_access' => false, 'public_demo_access' => true.
  *
  * ── Frontend note ──────────────────────────────────────────────────────────
  * Delivery defaults below mirror the audited frontend values
@@ -52,6 +69,13 @@ return [
     // One-click demo sign-in (development ONLY). Disabled by default.
     // Requires env === 'development' as well; production config must keep this false.
     'demo_access' => false,
+
+    // Public one-click demo sign-in (HOSTED PORTFOLIO DEMO ONLY).
+    // When true, api/public-demo-customer-login.php and
+    // api/public-demo-admin-login.php accept one-click sign-in for the
+    // dedicated demo identities, independent of env/debug. Keep false
+    // everywhere except the intentional public demonstration site.
+    'public_demo_access' => false,
 
     // PDO connection parameters (see config/database.php). No mysqli anywhere.
     'db' => [
