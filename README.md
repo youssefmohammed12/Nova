@@ -30,8 +30,9 @@ public-demo configuration is enabled on the server.
   session, and a reset can remove them.
 - Please **do not enter real sensitive personal or payment information**. This
   is a portfolio showcase; use the demo identities, not your own details.
-- Checkout is **Cash on Delivery** only. The live database and private
-  configuration are never part of this repository.
+- Checkout is **Cash on Delivery** only and **requires a signed-in account** —
+  the demo buttons cover that. The live database and private configuration are
+  never part of this repository.
 
 The public demo is powered by a separate `public_demo_access` setting and
 dedicated demo endpoints — see [Demo access](#demo-access) and the
@@ -50,7 +51,7 @@ dedicated demo endpoints — see [Demo access](#demo-access) and the
 - **Quick View** modal from any product card
 - Wishlist (persisted per browser) with a shop "wishlist mode" and an account wishlist page
 - Shopping cart with a free-delivery progress indicator (localStorage-based)
-- **Cash on Delivery checkout** with server-side validation and server-side price recalculation
+- **Cash on Delivery checkout for signed-in customers** — an account is required to place an order; server-side validation and price recalculation throughout
 - Order confirmation page that renders the persisted order straight from the database
 
 ### Customer accounts
@@ -440,20 +441,20 @@ Configuration rules that apply to every environment:
 
 ## Future deployment checklist
 
-NOVA Home is **prepared for GitHub publication and documented for future deployment** — it is not live. When a hosting provider is chosen:
+NOVA Home is **live on InfinityFree** as a portfolio demonstration (see [Live demo](#live-demo)) and **prepared for GitHub publication**. The items below were verified against the live site on **2026-10-17** — checked items are done; two configuration items remain:
 
-- [ ] Select hosting that supports PHP 8.1+ and MySQL/MariaDB with `pdo_mysql`
-- [ ] Create the production database and a dedicated least-privilege database user
-- [ ] Upload the codebase (excluding local-only `config/config.php`, `database/backups/`, `node_modules/`, and logs — `.gitignore` already excludes them)
-- [ ] Create `config/config.php` from the example with production credentials, `env => 'production'`, `debug => false`, and an explicit `base_url`
-- [ ] Confirm `demo_access` stays `false` (the default) — the development-only demo must be impossible in production
-- [ ] Decide on the public demo: leave `public_demo_access => false` (no demo buttons, endpoints `403`), or set it `true` **only** on the intentional portfolio demo (see `docs/development/INFINITYFREE_DEMO_SETUP.md`) and import `database/demo-data.infinityfree.sql` via phpMyAdmin
-- [ ] Apply `database/schema.sql` + `database/seed.sql` (and any newer migrations) to the production database; create the administrator via the CLI script or a secure one-off
-- [ ] Enable HTTPS and verify session cookies carry the `Secure` flag
-- [ ] Verify `.htaccess` protection is honored (or replicate the deny rules in server config) — confirm `config/`, `database/`, `includes/`, and `scripts/` return 403/404
-- [ ] Confirm `health.php` returns 404 and no PHP warnings are visible anywhere
-- [ ] Run the smoke checklist on the deployed site: homepage, product detail, cart, checkout, customer login/registration, one account page, admin login, one management page
-- [ ] Add the real live-demo link to this README after successful deployment
+- [x] Select hosting that supports PHP 8.1+ and MySQL/MariaDB with `pdo_mysql` (live stack: PHP 8.4.25, MariaDB 11.4.13)
+- [x] Create the production database and a dedicated least-privilege database user (catalog seeded and serving: 5 categories / 14 products / 14 images / 42 specs / 6 settings)
+- [x] Upload the codebase (excluding local-only `config/config.php`, `database/backups/`, `node_modules/`, and logs — `.gitignore` already excludes them)
+- [ ] Create `config/config.php` from the example with production credentials, `env => 'production'`, `debug => false`, and an explicit `base_url` — **still open:** the live `health.php` currently returns `200`, which means `env` is still `'development'` on the host; set `env => 'production'`, `debug => false`, and `'base_url' => '/'` in the private live config
+- [x] Confirm `demo_access` stays `false` (the default) — the development-only demo must be impossible in production (verified live: the dev demo endpoint returns `403` even though `env` is still development)
+- [x] Decide on the public demo: leave `public_demo_access => false` (no demo buttons, endpoints `403`), or set it `true` **only** on the intentional portfolio demo (see `docs/development/INFINITYFREE_DEMO_SETUP.md`) and import `database/demo-data.infinityfree.sql` via phpMyAdmin (done: both demo buttons live; both public demo sign-ins return `200` as the dedicated identities)
+- [x] Apply `database/schema.sql` + `database/seed.sql` (and any newer migrations) to the production database; create the administrator via the CLI script or a secure one-off (admin authentication verified live through the dedicated demo administrator)
+- [x] Enable HTTPS and verify session cookies carry the `Secure` flag (verified live: `PHPSESSID` is `secure=true, httpOnly=true, samesite=Lax` over HTTPS)
+- [x] Verify `.htaccess` protection is honored (or replicate the deny rules in server config) — confirm `config/`, `database/`, `includes/`, and `scripts/` return 403/404 (verified live: all four return `403`)
+- [ ] Confirm `health.php` returns 404 and no PHP warnings are visible anywhere — **partially open:** zero PHP warnings were found on any tested page, but `health.php` returns `200` until `env => 'production'` is set (previous item); it then returns `404` automatically
+- [x] Run the smoke checklist on the deployed site: homepage, product detail, cart, checkout, customer login/registration, one account page, admin login, one management page (all verified live: `200`, rendered content, zero warnings)
+- [x] Add the real live-demo link to this README after successful deployment
 
 ---
 

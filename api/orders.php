@@ -1,14 +1,26 @@
 <?php
-/** NOVA Home — POST /api/orders.php (Phase 3). Guest COD checkout.
+/** NOVA Home — POST /api/orders.php (Phase 3; guest path removed 2026-10-17).
+ * AUTHENTICATED COD checkout only: an active customer session is required.
  * JSON: customer_name, phone, email (optional), city (controlled list),
  * address (+apartment merged), notes (optional), payment_method ('cod'),
  * items [{slug, qty 1..10}], csrf_token. Prices/delivery from MySQL only.
+ * Customer identity comes exclusively from the server-side session — any
+ * client-submitted customer_id / total / price is ignored or recomputed.
  */
 declare(strict_types=1);
 require_once __DIR__ . '/../includes/bootstrap.php';
 require_once NOVA_ROOT . '/includes/customer-auth.php';
 if (!is_post()) {
     json_response(['success' => false, 'error' => 'Method not allowed.'], 405);
+}
+// ── Authenticated checkout only (2026-10-17) ───────────────────────────────
+// Rejects BEFORE any parsing or database work, so no order/order_items row
+// can be created by an unauthenticated request and the client cart is never
+// cleared by a rejected submission. Admin sessions do NOT satisfy this gate —
+// only the customer session model does.
+$me = nova_customer_user();
+if ($me === null) {
+    json_response(['success' => false, 'error' => 'Please sign in to place your order.', 'code' => 'auth_required'], 401);
 }
 try {
     $raw = file_get_contents('php://input');
@@ -107,11 +119,11 @@ try {
     $threshold = (int) nova_setting('free_delivery_threshold', 1500);
     $deliveryFee = ($subtotal >= $threshold) ? 0 : $fee;
     $total = $subtotal + $deliveryFee;
-    // Phase 9: associate the order with the session customer when signed in.
-    // Guests stay NULL. Any customer_id submitted by the browser is IGNORED —
-    // ownership comes only from the re-checked server-side session.
-    $me = nova_customer_user();
-    $customerId = $me !== null ? $me['id'] : null;
+    // Customer identity: the re-checked server-side session ONLY (never
+    // client input). Every new order is linked to the authenticated
+    // customer's actual customers.id (schema keeps the column nullable so
+    // historical pre-2026-10-17 guest rows remain intact).
+    $customerId = $me['id'];
     // Transactional insert with collision-safe reference.
     $pdo = nova_pdo();
     try {

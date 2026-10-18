@@ -18,6 +18,18 @@
     g.innerHTML = grid(list, new Set(NOVA.wish.ids()));
   };
 
+  /* ── Authenticated checkout (2026-10-17) ──────────────────────────────
+     api/orders.php rejects unauthenticated order creation with 401, so the
+     cart CTA and checkout page send signed-out visitors to
+     login.php?return=checkout. That return value is whitelisted server-side
+     (the literal 'checkout' only — never a raw URL), and the localStorage
+     cart survives every redirect. */
+  const CO_LOGIN = 'account/login.php?return=checkout';
+  const customerAuthed = () => fetch((NOVA.BASE || '') + 'api/customer-auth.php', { headers: { Accept: 'application/json' }, cache: 'no-store' })
+    .then(r => (r.ok ? r.json() : null))
+    .then(j => !!(j && j.success && j.data && j.data.authenticated))
+    .catch(() => false);
+
   const pages = {
     home() {
       const catGrid = $('#category-grid'), featGrid = $('#featured-grid'), slides = $('#bestseller-slides');
@@ -430,6 +442,10 @@
     cart() {
       const filledEl = $('#cart-filled'), emptyEl = $('#cart-empty'), linesEl = $('#cart-lines');
       if (!filledEl || !emptyEl || !linesEl) return;
+      // Authenticated checkout: point the CTA at login when signed out.
+      // (A race just falls through to the checkout page gate, which redirects.)
+      const coBtn = $('#cart-checkout');
+      if (coBtn) customerAuthed().then(ok => { if (!ok) coBtn.setAttribute('href', CO_LOGIN); });
       const render = () => {
         const items = NOVA.cart.items(), full = items.length > 0;
         filledEl.hidden = !full; emptyEl.hidden = full;
@@ -453,6 +469,12 @@
     checkout() {
       const linesEl = $('#co-lines'), form = $('#checkout-form');
       if (!linesEl || !form) return;
+      /* Checkout requires a customer session (2026-10-17). Signed-out
+         visitors are redirected to the login flow with a whitelisted
+         return=checkout; the localStorage cart is untouched by the redirect.
+         A session that expires mid-checkout is caught by the 401 handler in
+         the submit flow below. */
+      customerAuthed().then(ok => { if (!ok) location.replace(CO_LOGIN); });
       const cartMsg = $('#co-cart-msg'), placeBtn = $('#place-order');
       const renderSummary = () => {
         const items = NOVA.cart.items();
@@ -467,8 +489,8 @@
       };
       renderSummary();
       /* Phase 9: prefill from the authenticated customer's profile + default
-         saved address. Guests (401) and failures silently keep the current
-         guest flow. Purely presentation — submission is unchanged. */
+         saved address. 401s/failures simply keep whatever is in the form.
+         Purely presentation — submission is unchanged. */
       (function prefillFromAccount() {
         const fill = (id, val) => { const el = form.querySelector('#' + id); if (el && val && !el.value) el.value = val; };
         const base = NOVA.BASE || '';
@@ -477,7 +499,9 @@
           .then(j => {
             if (!(j && j.success && j.data)) return null;
             fill('c-name', j.data.name);
-            fill('c-phone', j.data.phone);
+            // Normalise stored phones (e.g. '+20 112 345 6789') so the strict
+            // input pattern validates the prefilled value.
+            fill('c-phone', String(j.data.phone || '').replace(/\s+/g, ''));
             return fetch(base + 'api/customer-addresses.php', { headers: { Accept: 'application/json' } });
           })
           .then(r => (r ? (r.ok ? r.json() : null) : null))
@@ -493,7 +517,7 @@
               if (opt) citySel.value = opt.value || opt.text;
             }
           })
-          .catch(() => { /* guest or network issue: guest flow unchanged */ });
+          .catch(() => { /* profile fetch failed: keep the current form values */ });
       })();
       document.addEventListener('cart:change', renderSummary);
       /* Reuse stored estimator city so checkout does not force a reselect. Read-only. */
@@ -573,6 +597,13 @@
             return post(token);
           })
           .then(({ status, body }) => {
+            if (status === 401) {
+              // Session expired or signed out mid-checkout: return to the
+              // login flow. The cart is NOT cleared (clear() runs only after
+              // the server confirms a created order below).
+              location.replace(CO_LOGIN);
+              return;
+            }
             if (!body || !body.success) {
               const msg = (body && body.error) || 'Unable to create order. Please try again.';
               coFail(msg);

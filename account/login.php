@@ -7,8 +7,11 @@
 declare(strict_types=1);
 require_once __DIR__ . '/../includes/bootstrap.php';
 require_once NOVA_ROOT . '/includes/customer-auth.php';
+// Safe return-to-checkout (2026-10-17): only the exact literal 'checkout' is
+// honoured — never a raw URL — so no open redirect is possible.
+$returnTo = (($_GET['return'] ?? '') === 'checkout') ? '../checkout.html' : null;
 if (nova_customer_user() !== null) {
-    header('Location: index.php', true, 302);
+    header('Location: ' . ($returnTo ?? 'index.php'), true, 302);
     exit;
 }
 $csrfToken = nova_csrf_token();
@@ -50,7 +53,10 @@ $pageTitle = 'Sign in | NOVA Home';
   <div class="row justify-content-center"><div class="col-md-7 col-lg-5">
     <div class="auth-card" data-reveal>
       <h1 class="h3">Welcome back</h1>
-      <p class="text-muted-nova">Sign in to your NOVA Home account. Guest checkout also works without an account.</p>
+      <?php if ($returnTo !== null): ?>
+      <p class="alert alert-info small" id="co-return-notice"><i class="bi bi-cart3 me-1" aria-hidden="true"></i><strong>An account is required to check out.</strong> Sign in or create one to complete your purchase — your cart is saved and will be waiting for you.</p>
+      <?php endif; ?>
+      <p class="text-muted-nova">Sign in to your NOVA Home account.<?php if ($returnTo === null): ?> Create an account to check out faster.<?php endif; ?></p>
       <form id="cust-login-form" novalidate data-csrf="<?= e($csrfToken) ?>">
         <div class="mb-3"><label class="form-label" for="l-email">Email</label><input class="form-control" id="l-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required><div class="invalid-feedback">Enter your email address.</div></div>
         <div class="mb-3"><label class="form-label" for="l-pass">Password</label><input class="form-control" id="l-pass" name="password" type="password" autocomplete="current-password" minlength="6" required><div class="invalid-feedback">Enter your password (6+ characters).</div></div>
@@ -58,7 +64,7 @@ $pageTitle = 'Sign in | NOVA Home';
         <p class="alert alert-danger mb-3" id="cust-login-error" hidden tabindex="-1" role="alert"></p>
         <button class="btn btn-nova w-100" type="submit" id="cust-login-btn">Sign in</button>
       </form>
-      <p class="mt-3 mb-0 text-center small">New here? <a href="register.php">Create an account</a></p>
+      <p class="mt-3 mb-0 text-center small">New here? <a href="register.php<?= $returnTo !== null ? '?return=checkout' : '' ?>">Create an account</a></p>
     </div>
 <?php if ($demoEnabled): ?>
     <div class="demo-access-card mt-4 text-center" data-reveal>
@@ -79,6 +85,8 @@ $pageTitle = 'Sign in | NOVA Home';
 <div id="site-footer"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// Whitelisted return destination (null or '../checkout.html') — never a raw URL.
+var CO_RETURN = <?= json_encode($returnTo, JSON_HEX_TAG | JSON_UNESCAPED_SLASHES) ?>;
 (function () {
   var form = document.getElementById('cust-login-form');
   var errBox = document.getElementById('cust-login-error');
@@ -106,7 +114,7 @@ $pageTitle = 'Sign in | NOVA Home';
       return r.json().catch(function () { return null; }).then(function (j) { return { s: r.status, j: j }; });
     }).then(function (res) {
       if (res.s === 200 && res.j && res.j.success) {
-        location.href = (res.j.data && res.j.data.redirect) || 'index.php';
+        location.href = CO_RETURN || (res.j.data && res.j.data.redirect) || 'index.php';
         return;
       }
       fail((res.j && res.j.error) || 'Unable to sign in right now.');
@@ -136,7 +144,7 @@ $pageTitle = 'Sign in | NOVA Home';
         if (res.j.data && res.j.data.wishlist) {
           try { localStorage.setItem('nova_wish', JSON.stringify(res.j.data.wishlist.map(String))); } catch (e) {}
         }
-        location.href = (res.j.data && res.j.data.redirect) || 'index.php';
+        location.href = CO_RETURN || (res.j.data && res.j.data.redirect) || 'index.php';
         return;
       }
       errBox.textContent = (res.j && res.j.error) || 'Demo sign-in failed.';
