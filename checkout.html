@@ -30,7 +30,7 @@
         <div class="col-12"><label class="form-label" for="c-name">Full name</label><input class="form-control" id="c-name" name="name" autocomplete="name" required><div class="invalid-feedback">Please enter your full name.</div></div>
         <div class="col-md-6"><label class="form-label" for="c-phone">Phone number</label><input class="form-control" id="c-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="01012345678" pattern="^(\+20|0)?1[0125][0-9]{8}$" required><div class="invalid-feedback">Enter a valid Egyptian mobile number, for example 01012345678.</div></div>
         <div class="col-md-6"><label class="form-label" for="c-email">Email <span class="text-muted-nova">(optional)</span></label><input class="form-control" id="c-email" name="email" type="email" autocomplete="email"><div class="invalid-feedback">Enter a valid email address.</div></div>
-        <div class="col-md-6"><label class="form-label" for="c-city">City</label><select class="form-select" id="c-city" name="city" required><option value="">Choose city</option><option>Cairo</option><option>Giza</option><option>Alexandria</option><option>Mansoura</option><option>Tanta</option><option>Other</option></select><div class="invalid-feedback">Please choose your city.</div></div>
+        <div class="col-md-6"><label class="form-label" for="c-city">City</label><select class="form-select" id="c-city" name="city" required><option value="">Choose city</option><option value="cairo">Cairo</option><option value="giza">Giza</option><option value="alexandria">Alexandria</option><option value="mansoura">Mansoura</option><option value="tanta">Tanta</option><option value="fayoum">Fayoum</option><option value="other">Other Egypt</option></select><div class="invalid-feedback">Please choose your city.</div></div>
         <div class="col-md-6"><label class="form-label" for="c-apt">Apartment / building</label><input class="form-control" id="c-apt" name="apartment" autocomplete="address-line2" required><div class="invalid-feedback">Add your building and apartment number.</div></div>
         <div class="col-12"><label class="form-label" for="c-address">Street address</label><input class="form-control" id="c-address" name="address" autocomplete="street-address" required><div class="invalid-feedback">Please enter your street address.</div></div>
         <div class="col-12"><label class="form-label" for="c-notes">Delivery notes <span class="text-muted-nova">(optional)</span></label><textarea class="form-control" id="c-notes" name="notes" rows="3"></textarea></div>
@@ -51,7 +51,11 @@
 <script src="js/settings.js"></script>
 <script src="js/catalog.js"></script>
 <script src="js/cart.js"></script>
+<script src="js/ui/search.js"></script>
+<script src="js/ui/quick-view.js"></script>
+<script src="js/ui/shell.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/pages/checkout.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

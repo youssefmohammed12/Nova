@@ -30,7 +30,7 @@
       <p class="text-muted-nova mb-1" id="pdp-cat"></p><h1 class="h2" id="pdp-name"></h1>
       <p class="small my-2" id="pdp-rating"></p>
       <p class="pdp__price my-3" id="pdp-price"></p>
-      <p class="stock"><i class="bi bi-check-circle me-1" aria-hidden="true"></i>In stock, ships within 2 working days</p>
+      <p class="stock text-muted-nova"><i class="bi bi-info-circle me-1" aria-hidden="true"></i>Availability is not tracked in this demo catalogue.</p>
       <p id="pdp-desc"></p>
       <div class="d-flex flex-wrap align-items-center gap-3 my-4" id="pdp-actions">
         <div class="qty" role="group" aria-label="Quantity"><button id="qty-minus" type="button" aria-label="Decrease quantity">&minus;</button><output id="qty-value" aria-live="polite">1</output><button id="qty-plus" type="button" aria-label="Increase quantity">+</button></div>
@@ -39,12 +39,12 @@
       <ul class="info-list border-top pt-3">
         <li><i class="bi bi-truck" aria-hidden="true"></i><span data-delivery-info>Delivery across Egypt.</span></li>
         <li><i class="bi bi-cash-coin" aria-hidden="true"></i>Pay with cash on delivery.</li>
-        <li><i class="bi bi-arrow-repeat" aria-hidden="true"></i>14-day returns on unused items.</li></ul>
+        <li><i class="bi bi-info-circle" aria-hidden="true"></i>Return terms are illustrative in this demo.</li></ul>
       <div class="ship-est" id="ship-est">
         <p class="ship-est__title"><i class="bi bi-truck" aria-hidden="true"></i>Check delivery</p>
         <label class="ship-est__label" for="ship-city">Where are you located?</label>
         <select class="form-select form-select-sm" id="ship-city"></select>
-        <p class="ship-est__result" aria-live="polite"><span class="d-block text-muted-nova small">Estimated delivery</span><strong id="ship-days"></strong><span class="d-block text-muted-nova small mt-1">Delivery fee <strong class="text-body" id="ship-fee"></strong> <span aria-hidden="true">·</span> Cash on delivery available</span><span class="d-block text-muted-nova small mt-1">Demo estimate, not a courier guarantee.</span></p>
+        <p class="ship-est__result" aria-live="polite"><span class="d-block text-muted-nova small">Estimated delivery</span><strong id="ship-days"></strong><span class="d-block text-muted-nova small mt-1">Delivery fee <strong class="text-body" id="ship-fee"></strong> <span aria-hidden="true">·</span> Cash on delivery available</span><span class="d-block text-muted-nova small mt-1">Delivery times are estimates and may vary.</span></p>
       </div>
       <h2 class="h5 mt-4">Details</h2><table class="spec-table"><tbody id="pdp-specs"></tbody></table>
     </div></div>
@@ -59,7 +59,11 @@
 <script src="js/settings.js"></script>
 <script src="js/catalog.js"></script>
 <script src="js/cart.js"></script>
+<script src="js/ui/search.js"></script>
+<script src="js/ui/quick-view.js"></script>
+<script src="js/ui/shell.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/pages/product.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

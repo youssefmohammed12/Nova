@@ -1,9 +1,10 @@
 <?php
 /** NOVA Home - POST /api/customer-register.php (Phase 9). Create an account
  * and sign the customer in. JSON: {name, email, phone, password,
- * password_confirm, csrf_token}. Email normalized (trim+lowercase), UNIQUE
- * enforced by the DB (23000 -> safe message, no duplicate accounts), bcrypt
- * via password_hash(). Session regenerated after success. Generic errors only.
+ * password_confirm, terms_accepted, csrf_token}. Terms acceptance is
+ * required server-side. Email is normalized (trim+lowercase), UNIQUE enforced
+ * by the DB (23000 -> safe message), password_hash() stores the password.
+ * Session regenerated after success. Generic errors only.
  */
 declare(strict_types=1);
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -19,6 +20,9 @@ try {
     }
     if (!nova_verify_csrf($body['csrf_token'] ?? null)) {
         json_response(['success' => false, 'error' => 'Session expired. Please refresh and try again.'], 400);
+    }
+    if (($body['terms_accepted'] ?? false) !== true) {
+        json_response(['success' => false, 'error' => 'Please accept the Terms of Service and Privacy Policy to create an account.'], 400);
     }
     $name = v_text($body['name'] ?? '', 120);
     $email = strtolower(trim((string) ($body['email'] ?? '')));

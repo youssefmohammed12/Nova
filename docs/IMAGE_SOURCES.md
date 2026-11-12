@@ -10,20 +10,26 @@ All product photographs were sourced from **Pexels** under the [Pexels License](
 
 | Product Slug | Product Name | Category | Local Asset Path | Photographer / Source | Dimensions | File Size | License |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| `sahara-vase` | Sahara Ceramic Vase | Decor | `assets/images/products/sahara-vase/main.webp` | [Irina Novikova](https://www.pexels.com/photo/handcrafted-ceramic-vases-on-display-29286721/) | 1200×1200 | 101.2 KB | Pexels License |
-| `luna-floor-lamp` | Luna Arc Floor Lamp | Lighting | `assets/images/products/luna-floor-lamp/main.webp` | [Skylar Kang](https://www.pexels.com/photo/floor-lamp-near-poster-in-room-6045108/) | 1200×1200 | 32.4 KB | Pexels License |
-| `olive-serving-board` | Olive Wood Serving Board | Kitchen | `assets/images/products/olive-serving-board/main.webp` | [Kaboompics](https://www.pexels.com/photo/knife-and-chopped-asparagus-on-wooden-board-4397788/) | 1200×1200 | 36.0 KB | Pexels License |
+| `sahara-vase` | Sahara Ceramic Vase | Decor | `assets/images/products/sahara-vase/main.webp` | [Ivan S](https://www.pexels.com/photo/ceramic-vases-on-a-white-surface-7119222/) | 1200×1200 | 82.0 KB | Pexels License |
+| `luna-floor-lamp` | Luna Arc Floor Lamp | Lighting | `assets/images/products/luna-floor-lamp/main.webp` | [Zafer Erdoğan](https://www.pexels.com/photo/cozy-minimalist-room-with-floor-lamp-lighting-32684360/) | 1200×1200 | 28.9 KB | Pexels License |
+| `olive-serving-board` | Olive Wood Serving Board | Kitchen | `assets/images/products/olive-serving-board/main.webp` | [Electra Studio](https://www.pexels.com/photo/brown-wooden-chopping-board-on-white-surface-7026919/) | 1200×1200 | 183.2 KB | Pexels License |
 | `nile-basket-set` | Nile Woven Basket Set | Storage | `assets/images/products/nile-basket-set/main.webp` | [Orhan Pergel](https://www.pexels.com/photo/empty-wicker-baskets-21550127/) | 1200×1200 | 94.5 KB | Pexels License |
 | `halo-mirror` | Halo Round Wall Mirror | Decor | `assets/images/products/halo-mirror/main.webp` | [TwoSix ZeroFive](https://www.pexels.com/photo/minimalist-decor-with-round-mirror-and-vase-37652240/) | 1200×1200 | 92.1 KB | Pexels License |
 | `dune-table-lamp` | Dune Bedside Table Lamp | Lighting | `assets/images/products/dune-table-lamp/main.webp` | [Osmany Mederos](https://www.pexels.com/photo/lamp-on-a-nightstand-17994856/) | 1200×1200 | 67.0 KB | Pexels License |
 | `terra-mug-set` | Terra Stoneware Mug Set | Kitchen | `assets/images/products/terra-mug-set/main.webp` | [Pavel Danilyuk](https://www.pexels.com/photo/ceramic-mugs-on-round-ceramic-tray-7674544/) | 1200×1200 | 42.0 KB | Pexels License |
-| `aswan-side-table` | Aswan Oak Side Table | Furniture | `assets/images/products/aswan-side-table/main.webp` | [Lisa Fotios](https://www.pexels.com/photo/round-brown-wooden-end-table-1444424/) | 1200×1200 | 32.5 KB | Pexels License |
+| `aswan-side-table` | Aswan Oak Side Table | Furniture | `assets/images/products/aswan-side-table/main.webp` | [Skylar Kang](https://www.pexels.com/photo/interior-details-of-minimalist-office-with-comfortable-armchair-and-small-table-6368947/) | 1200×1200 | 91.9 KB | Pexels License |
 | `cairo-boucle-chair` | Cairo Boucle Accent Chair | Furniture | `assets/images/products/cairo-boucle-chair/main.webp` | [Pavel Morillo](https://www.pexels.com/photo/modern-japandi-style-interior-with-cozy-armchairs-29383227/) | 1200×1200 | 43.3 KB | Pexels License |
 | `stack-shelf` | Stack Modular Shelf | Storage | `assets/images/products/stack-shelf/main.webp` | [Wolf Art](https://www.pexels.com/photo/books-on-shelves-in-room-corner-17390716/) | 1200×1200 | 101.0 KB | Pexels License |
 | `pillar-candles` | Pillar Soy Candle Trio | Decor | `assets/images/products/pillar-candles/main.webp` | [Alexey Demidov](https://www.pexels.com/photo/close-up-shot-of-unlighted-candles-in-in-candle-holders-9780175/) | 1200×1200 | 36.9 KB | Pexels License |
 | `oasis-pendant` | Oasis Pendant Light | Lighting | `assets/images/products/oasis-pendant/main.webp` | [Ziad Madkour](https://www.pexels.com/photo/modern-hanging-pendant-lights-in-a-cozy-interior-30561628/) | 1200×1200 | 54.0 KB | Pexels License |
 | `copper-rack` | Copper Utensil Rack | Kitchen | `assets/images/products/copper-rack/main.webp` | [Isabel Ph](https://www.pexels.com/photo/a-kitchen-with-a-gold-metal-rack-and-utensils-28080320/) | 1200×1200 | 89.7 KB | Pexels License |
 | `minimal-clock` | Minimal Wall Clock | Decor | `assets/images/products/minimal-clock/main.webp` | [Katrin Bolovtsova](https://www.pexels.com/photo/a-clock-on-a-wall-6077815/) | 1200×1200 | 20.0 KB | Pexels License |
+
+### Homepage editorial image
+
+| Section | Local Asset Path | Photographer / Source | Dimensions | File Size | License |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| "Artisanal craft" panel on `index.html` | `assets/images/craft/artisan-pottery.webp` | [Vitaly Gariev](https://www.pexels.com/photo/hands-crafting-clay-pot-on-pottery-wheel-40895223/) | 1200×1200 | 79.7 KB | Pexels License |
 
 ---
 
@@ -34,13 +40,13 @@ All product photographs were sourced from **Pexels** under the [Pexels License](
 - **Category**: Decor
 - **Role**: Primary storefront image
 - **Local Path**: `assets/images/products/sahara-vase/main.webp`
-- **Source Page**: [Pexels Photo 29286721](https://www.pexels.com/photo/handcrafted-ceramic-vases-on-display-29286721/)
-- **Direct Download URL**: `https://images.pexels.com/photos/29286721/pexels-photo-29286721/free-photo-of-handcrafted-ceramic-vases-on-display.jpeg?auto=compress&cs=tinysrgb&w=1200`
-- **Photographer**: Irina Novikova
+- **Source Page**: [Pexels Photo 7119222](https://www.pexels.com/photo/ceramic-vases-on-a-white-surface-7119222/)
+- **Direct Download URL**: `https://images.pexels.com/photos/7119222/pexels-photo-7119222.jpeg?auto=compress&cs=tinysrgb&w=2400`
+- **Photographer**: Ivan S
 - **License**: Pexels License (Commercial & personal use allowed, no attribution required)
-- **Download & Processing Date**: 2026-10-16
+- **Download & Processing Date**: 2026-11-11
 - **Dimensions**: 1200 × 1200 px (1:1 square crop, centered)
-- **Format & Quality**: WebP (85% quality, 103,608 bytes / ~101.2 KB)
+- **Format & Quality**: WebP (85% quality, 83,944 bytes / ~82.0 KB)
 - **Alt Text**: Handcrafted ceramic vases with soft matte glaze in warm clay
 
 ### 2. Luna Arc Floor Lamp (`luna-floor-lamp`)
@@ -48,13 +54,13 @@ All product photographs were sourced from **Pexels** under the [Pexels License](
 - **Category**: Lighting
 - **Role**: Primary storefront image
 - **Local Path**: `assets/images/products/luna-floor-lamp/main.webp`
-- **Source Page**: [Pexels Photo 6045108](https://www.pexels.com/photo/floor-lamp-near-poster-in-room-6045108/)
-- **Direct Download URL**: `https://images.pexels.com/photos/6045108/pexels-photo-6045108.jpeg?auto=compress&cs=tinysrgb&w=1200`
-- **Photographer**: Skylar Kang
+- **Source Page**: [Pexels Photo 32684360](https://www.pexels.com/photo/cozy-minimalist-room-with-floor-lamp-lighting-32684360/)
+- **Direct Download URL**: `https://images.pexels.com/photos/32684360/pexels-photo-32684360.jpeg?auto=compress&cs=tinysrgb&w=2400`
+- **Photographer**: Zafer Erdoğan
 - **License**: Pexels License (Commercial & personal use allowed, no attribution required)
-- **Download & Processing Date**: 2026-10-16
+- **Download & Processing Date**: 2026-11-11
 - **Dimensions**: 1200 × 1200 px (1:1 square crop, centered)
-- **Format & Quality**: WebP (85% quality, 33,184 bytes / ~32.4 KB)
+- **Format & Quality**: WebP (85% quality, 29,544 bytes / ~28.9 KB)
 - **Alt Text**: Slim steel arc floor lamp with linen-textured shade in living room
 
 ### 3. Olive Wood Serving Board (`olive-serving-board`)
@@ -62,13 +68,13 @@ All product photographs were sourced from **Pexels** under the [Pexels License](
 - **Category**: Kitchen
 - **Role**: Primary storefront image
 - **Local Path**: `assets/images/products/olive-serving-board/main.webp`
-- **Source Page**: [Pexels Photo 4397788](https://www.pexels.com/photo/knife-and-chopped-asparagus-on-wooden-board-4397788/)
-- **Direct Download URL**: `https://images.pexels.com/photos/4397788/pexels-photo-4397788.jpeg?auto=compress&cs=tinysrgb&w=1200`
-- **Photographer / Contributor**: Kaboompics
+- **Source Page**: [Pexels Photo 7026919](https://www.pexels.com/photo/brown-wooden-chopping-board-on-white-surface-7026919/)
+- **Direct Download URL**: `https://images.pexels.com/photos/7026919/pexels-photo-7026919.jpeg?auto=compress&cs=tinysrgb&w=2400`
+- **Photographer / Contributor**: Electra Studio
 - **License**: Pexels License (Commercial & personal use allowed, no attribution required)
-- **Download & Processing Date**: 2026-10-16
+- **Download & Processing Date**: 2026-11-11
 - **Dimensions**: 1200 × 1200 px (1:1 square crop, centered)
-- **Format & Quality**: WebP (85% quality, 36,840 bytes / ~36.0 KB)
+- **Format & Quality**: WebP (70% quality, 187,554 bytes / ~183.2 KB)
 - **Alt Text**: Solid olive wood serving board with natural grain variation
 
 ### 4. Nile Woven Basket Set (`nile-basket-set`)
@@ -132,13 +138,13 @@ All product photographs were sourced from **Pexels** under the [Pexels License](
 - **Category**: Furniture
 - **Role**: Primary storefront image
 - **Local Path**: `assets/images/products/aswan-side-table/main.webp`
-- **Source Page**: [Pexels Photo 1444424](https://www.pexels.com/photo/round-brown-wooden-end-table-1444424/)
-- **Direct Download URL**: `https://images.pexels.com/photos/1444424/pexels-photo-1444424.jpeg?auto=compress&cs=tinysrgb&w=1200`
-- **Photographer**: Lisa Fotios
+- **Source Page**: [Pexels Photo 6368947](https://www.pexels.com/photo/interior-details-of-minimalist-office-with-comfortable-armchair-and-small-table-6368947/)
+- **Direct Download URL**: `https://images.pexels.com/photos/6368947/pexels-photo-6368947.jpeg?auto=compress&cs=tinysrgb&w=2400`
+- **Photographer**: Skylar Kang
 - **License**: Pexels License (Commercial & personal use allowed, no attribution required)
-- **Download & Processing Date**: 2026-10-16
+- **Download & Processing Date**: 2026-11-11
 - **Dimensions**: 1200 × 1200 px (1:1 square crop, centered)
-- **Format & Quality**: WebP (85% quality, 33,316 bytes / ~32.5 KB)
+- **Format & Quality**: WebP (85% quality, 94,108 bytes / ~91.9 KB)
 - **Alt Text**: Round oak veneer side table with solid wood base
 
 ### 9. Cairo Boucle Accent Chair (`cairo-boucle-chair`)
@@ -225,6 +231,18 @@ All product photographs were sourced from **Pexels** under the [Pexels License](
 - **Format & Quality**: WebP (85% quality, 20,466 bytes / ~20.0 KB)
 - **Alt Text**: Minimalist wall clock with clean numberless face
 
+### 15. Homepage Artisanal Craft Panel (`craft/artisan-pottery`)
+- **Role**: Editorial image in the homepage hero collage (`index.html`, "Artisanal craft")
+- **Local Path**: `assets/images/craft/artisan-pottery.webp`
+- **Source Page**: [Pexels Photo 40895223](https://www.pexels.com/photo/hands-crafting-clay-pot-on-pottery-wheel-40895223/)
+- **Direct Download URL**: `https://images.pexels.com/photos/40895223/pexels-photo-40895223.jpeg?auto=compress&cs=tinysrgb&w=2600`
+- **Photographer**: Vitaly Gariev
+- **License**: Pexels License (Commercial & personal use allowed, no attribution required)
+- **Download & Processing Date**: 2026-11-11
+- **Dimensions**: 1200 × 1200 px (1:1 square crop, centered from 2600 × 1463)
+- **Format & Quality**: WebP (85% quality, 81,650 bytes / ~79.7 KB)
+- **Alt Text**: Artisan shaping a clay pot on a pottery wheel
+
 ---
 
 ## 3. Directory Layout & Storage
@@ -261,6 +279,13 @@ assets/images/products/
 │   └── main.webp
 └── terra-mug-set/
     └── main.webp
+
+assets/images/craft/
+└── artisan-pottery.webp
 ```
 
-Total size for all 14 optimized WebP product assets is **~780 KB** (average ~55 KB per image), delivering crisp, high-DPI visuals with instant loading performance over HTTP.
+Total size for all 14 optimized WebP product assets is **1,050,924 bytes (~1,026.3 KiB / 1.05 MB)**, averaging about **73.3 KiB per image**. The additional homepage editorial image is **81,650 bytes (~79.7 KiB)**, bringing the combined total to approximately **1.13 MB**. Sizes are the current on-disk files, not estimates.
+
+### Category illustrations
+
+The five category tiles (`assets/images/cat-decor.svg`, `cat-lighting.svg`, `cat-kitchen.svg`, `cat-storage.svg`, `cat-furniture.svg`) are hand-authored vector illustrations created for this project — no third-party licence or attribution applies. The storefront renders them from `categories.image` in the database, and `admin/categories.php` uses the same paths, so replacing these files updates both surfaces.

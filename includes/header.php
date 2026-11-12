@@ -24,7 +24,7 @@ $esc = function_exists('e') ? 'e' : 'htmlspecialchars';
 $cust = function_exists('nova_customer_user') ? nova_customer_user() : null;
 $csrfToken = function_exists('nova_csrf_token') ? nova_csrf_token() : '';
 ?>
-<div class="announcement" data-delivery-announcement>Free delivery over <?= $esc($freeOver) ?> across Cairo and Giza. Cash on delivery available.</div>
+<div class="announcement" data-delivery-announcement>Free delivery over <?= $esc($freeOver) ?> on eligible orders. Cash on delivery available.</div>
 <header class="site-header" id="siteHeader"><div class="container site-header__inner">
   <button class="icon-btn site-header__menu" type="button" data-bs-toggle="offcanvas" data-bs-target="#navDrawer" aria-controls="navDrawer" aria-label="Open menu"><i class="bi bi-list" aria-hidden="true"></i></button>
   <a class="brand" href="<?= $esc($B) ?>index.html" aria-label="NOVA Home, homepage">NOVA <span>Home</span></a>

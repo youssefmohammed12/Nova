@@ -59,7 +59,7 @@ $pageTitle = 'Sign in | NOVA Home';
       <p class="text-muted-nova">Sign in to your NOVA Home account.<?php if ($returnTo === null): ?> Create an account to check out faster.<?php endif; ?></p>
       <form id="cust-login-form" novalidate data-csrf="<?= e($csrfToken) ?>">
         <div class="mb-3"><label class="form-label" for="l-email">Email</label><input class="form-control" id="l-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required><div class="invalid-feedback">Enter your email address.</div></div>
-        <div class="mb-3"><label class="form-label" for="l-pass">Password</label><input class="form-control" id="l-pass" name="password" type="password" autocomplete="current-password" minlength="6" required><div class="invalid-feedback">Enter your password (6+ characters).</div></div>
+        <div class="mb-3"><label class="form-label" for="l-pass">Password</label><input class="form-control" id="l-pass" name="password" type="password" autocomplete="current-password" minlength="8" required><div class="invalid-feedback">Enter your password (8+ characters).</div></div>
         <p class="small text-muted-nova mb-3"><i class="bi bi-info-circle me-1" aria-hidden="true"></i>Password reset is not available yet.</p>
         <p class="alert alert-danger mb-3" id="cust-login-error" hidden tabindex="-1" role="alert"></p>
         <button class="btn btn-nova w-100" type="submit" id="cust-login-btn">Sign in</button>
@@ -164,6 +164,9 @@ var CO_RETURN = <?= json_encode($returnTo, JSON_HEX_TAG | JSON_UNESCAPED_SLASHES
 <script src="../js/settings.js"></script>
 <script src="../js/catalog.js"></script>
 <script src="../js/cart.js"></script>
+<script src="../js/ui/search.js"></script>
+<script src="../js/ui/quick-view.js"></script>
+<script src="../js/ui/shell.js"></script>
 <script src="../js/ui.js"></script>
 <script src="../js/main.js"></script>
 </body>

@@ -64,7 +64,7 @@
 .search-opt { display: flex; align-items: center; gap: .65rem; width: 100%; border: 0; background: none; text-align: left; padding: .45rem .55rem; border-radius: calc(var(--radius-sm) - 4px); min-height: 56px; }
 .search-opt img { width: 44px; height: 44px; flex: none; object-fit: cover; border-radius: calc(var(--radius-sm) - 4px); background: var(--c-stone); }
 .search-opt__text { flex: 1; min-width: 0; display: grid; }
-.search-opt__text strong { font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.search-opt__text strong { font-size: .9rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .search-opt__text small { color: var(--c-muted); font-size: .8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .search-opt__price { font-size: .85rem; font-weight: 600; white-space: nowrap; }
 .search-opt.is-active { background: var(--c-bg); box-shadow: inset 2px 0 0 var(--c-accent); }
@@ -76,6 +76,9 @@
 /* Shop filter search sits in a narrow sidebar: stack panel below the field. */
 .search-wrap--shop { display: block; }
 .search-wrap--shop .search-panel { margin-top: .4rem; }
+/* Shop sidebar is only 250px wide; let the suggestion panel breathe on desktop
+   so product names are readable instead of clipped to a few characters. */
+@media (min-width: 992px) { .search-wrap--shop .search-panel { min-width: 320px; } }
 #navDrawer { max-width: 330px; background: var(--c-surface); border-right: 1px solid var(--c-line); }
 #navDrawer .offcanvas-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--c-line); }
 #navDrawer .offcanvas-body { padding: 1.25rem 1.5rem 2rem; display: flex; flex-direction: column; }
@@ -108,33 +111,52 @@
 /* ---------- Product card ---------- */
 .product-card { position: relative; height: 100%; display: flex; flex-direction: column; background: var(--c-surface); border: 1px solid var(--c-line); border-radius: var(--radius); padding: .7rem .7rem 1rem; box-shadow: var(--shadow-sm); }
 .product-card__media { position: relative; overflow: hidden; border-radius: var(--radius-sm); background: linear-gradient(160deg, var(--c-bg), var(--c-stone)); aspect-ratio: 1; }
-.product-card__media > a { display: block; height: 100%; }
+.product-card__media > a { display: block; position: relative; height: 100%; color: inherit; }
 .product-card__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity .4s var(--ease), transform .6s var(--ease); }
 .product-card__img--alt { opacity: 0; }
 .product-card:hover .product-card__img { transform: scale(1.03); }
 .product-card:hover .product-card__img--alt { opacity: 1; }
 .badge-nova { position: absolute; top: .75rem; left: .75rem; background: var(--c-accent); color: #fff; font-size: .75rem; font-weight: 600; padding: .25rem .6rem; border-radius: 999px; }
 .badge-nova--dark { background: var(--c-ink); }
-.wish-btn { position: absolute; top: .5rem; right: .5rem; width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--c-surface); color: var(--c-ink); display: grid; place-items: center; box-shadow: var(--shadow-sm); transition: color var(--dur), transform var(--dur); }
+.wish-btn { position: absolute; top: .5rem; right: .5rem; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--c-surface); color: var(--c-ink); display: grid; place-items: center; box-shadow: var(--shadow-sm); transition: color var(--dur), transform var(--dur); }
 .wish-btn:hover { color: var(--c-accent); transform: scale(1.06); }
 .wish-btn[aria-pressed="true"] { color: var(--c-accent); }
-/* Quick View trigger: subtle overlay action, always keyboard/touch reachable */
-.quick-btn { position: absolute; left: 50%; bottom: .65rem; transform: translate(-50%, 6px); display: inline-flex; align-items: center; gap: .45rem; min-height: 44px; padding: .55rem 1.1rem; border: 1px solid var(--c-line); border-radius: 999px; background: var(--c-surface); color: var(--c-ink); font-size: .85rem; font-weight: 600; white-space: nowrap; box-shadow: var(--shadow-sm); opacity: 0; transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease); }
-.quick-btn i { font-size: 1rem; }
-.product-card:hover .quick-btn, .product-card:focus-within .quick-btn:focus-visible { opacity: 1; transform: translate(-50%, 0); }
-.quick-btn:hover { color: var(--c-accent); border-color: var(--c-sand); }
-@media (hover: none), (max-width: 575.98px) { .quick-btn { opacity: 1; transform: translate(-50%, 0); } }
-@media (prefers-reduced-motion: reduce) { .quick-btn { transition: none; } }
-/* Quick View modal: editorial two-column layout, stacks on mobile */
-.qv { border: 1px solid var(--c-line); border-radius: var(--radius-lg); background: var(--c-surface); }
-.qv .modal-header { border-bottom: 1px solid var(--c-line); }
-.qv__grid { display: grid; gap: 1.25rem; }
-.qv__media img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: var(--radius); background: var(--c-stone); }
+/* Product images open Quick View. Keep its hint quiet until hover or keyboard focus. */
+.product-card__preview-hint { position: absolute; left: 50%; bottom: .75rem; display: inline-flex; align-items: center; gap: .45rem; min-height: 40px; padding: .45rem .9rem; border: 1px solid var(--c-line); border-radius: 999px; background: var(--c-surface); color: var(--c-ink); font-size: .82rem; font-weight: 600; white-space: nowrap; box-shadow: var(--shadow-sm); opacity: 0; pointer-events: none; transform: translate(-50%, 6px); transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease); }
+.product-card__preview-hint i { font-size: .95rem; }
+@media (hover: hover) and (pointer: fine) {
+  .product-card:hover .product-card__preview-hint,
+  .product-card__media > a:focus-visible .product-card__preview-hint { opacity: 1; transform: translate(-50%, 0); }
+}
+@media (hover: none) { .product-card__preview-hint { display: none; } }
+@media (prefers-reduced-motion: reduce) { .product-card__preview-hint { transition: none; } }
+
+/* Compact Quick View: a centered preview on larger screens and a short bottom sheet on phones. */
+.qv-modal .modal-dialog { width: calc(100% - 2rem); max-width: 780px; }
+.qv { display: flex; flex-direction: column; max-height: min(84dvh, 740px); overflow: hidden; border: 1px solid var(--c-line); border-radius: var(--radius-lg); background: var(--c-surface); }
+.qv .modal-header { flex: 0 0 auto; padding: 1rem 1.25rem; border-bottom: 1px solid var(--c-line); }
+.qv .modal-body { min-height: 0; overflow-y: auto; padding: 1.25rem; }
+.qv__grid { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); align-items: start; gap: 1.25rem; }
+.qv__media img { display: block; width: 100%; max-height: 340px; aspect-ratio: 1 / 1; object-fit: cover; border-radius: var(--radius); background: var(--c-stone); }
 .qv__media img.is-swap { opacity: 0; }
 .qv__media img { transition: opacity .2s var(--ease); }
-.qv__price { font-size: 1.25rem; font-weight: 600; display: flex; align-items: baseline; gap: .5rem; flex-wrap: wrap; }
-.qv__desc { color: var(--c-muted); font-size: .95rem; margin-bottom: 0; }
-@media (min-width: 768px) { .qv__grid { grid-template-columns: 1fr 1fr; align-items: start; } }
+.qv__info { min-width: 0; }
+.qv__price { display: flex; align-items: baseline; flex-wrap: wrap; gap: .5rem; font-size: 1.25rem; font-weight: 600; }
+.qv__desc { margin-bottom: 0; color: var(--c-muted); font-size: .95rem; }
+@media (max-width: 767.98px) {
+  .qv-modal .modal-dialog { width: calc(100% - 1rem); max-width: 500px; min-height: calc(100% - 1rem); margin: .5rem auto; align-items: flex-end; }
+  .qv { max-height: min(86dvh, 680px); border-radius: 22px; }
+  .qv .modal-header { padding: .9rem 1rem; }
+  .qv .modal-body { padding: 1rem; }
+  .qv__grid { grid-template-columns: minmax(96px, .72fr) minmax(0, 1.28fr); gap: .9rem; }
+  .qv__media img { max-height: 160px; border-radius: var(--radius-sm); }
+  .qv__price { gap: .35rem; font-size: 1.05rem; }
+  .qv__desc { max-height: 5.8em; overflow-y: auto; font-size: .875rem; line-height: 1.45; }
+  .qv__info .d-flex.my-3 { gap: .5rem !important; margin-block: .75rem !important; }
+  .qv__info .d-flex.my-3 #qv-add { flex: 1 1 130px; min-width: 130px; }
+  .qv__info > .d-flex.gap-2 { gap: .5rem !important; }
+  .qv__info > .d-flex.gap-2 .btn { flex: 1 1 auto; min-width: 0; font-size: .8rem; }
+}
 @media (prefers-reduced-motion: reduce) { .qv__media img { transition: none; } }
 .product-card__body { padding: .85rem .35rem 0; display: flex; flex-direction: column; flex: 1; }
 .product-card__cat { font-size: .8125rem; color: var(--c-muted); }
@@ -198,3 +220,80 @@
 .footer-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem; font-size: .8125rem; color: var(--c-footer-text); }
 .footer-badge { display: inline-flex; align-items: center; gap: .35rem; }
 .footer-badge i { color: var(--c-sand); font-size: .95rem; }
+
+/* ---------- Catalogue loading placeholders (Batch A) ---------- */
+.nav-auth-slot.is-auth-pending { visibility: hidden; }
+.skeleton-card { height: 100%; background: var(--c-surface); border: 1px solid var(--c-line); border-radius: var(--radius); padding: .7rem .7rem 1rem; }
+.skeleton-card__media,
+.skeleton-card__line {
+  display: block;
+  background: linear-gradient(100deg, var(--c-stone) 30%, var(--c-bg) 50%, var(--c-stone) 70%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+}
+.skeleton-card__media { aspect-ratio: 1; border-radius: var(--radius-sm); }
+.skeleton-card--category { padding: 0; border: 0; background: none; }
+.skeleton-card--category .skeleton-card__media { aspect-ratio: 4 / 5; border-radius: var(--radius); }
+.skeleton-card__line { height: 12px; margin: .65rem .15rem 0; border-radius: 999px; }
+.skeleton-card__line--short { width: 55%; }
+@keyframes skeleton-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .skeleton-card__media, .skeleton-card__line { animation: none; } }
+
+/* Phone Quick View uses a compact summary row, then full-width controls. */
+@media (max-width: 767.98px) {
+  .qv-modal .qv__grid {
+    grid-template-columns: minmax(88px, .55fr) minmax(0, 1.45fr);
+    grid-template-areas:
+      "media cat"
+      "media rating"
+      "media price"
+      "media stock"
+      "desc desc"
+      "actions actions"
+      "links links";
+    align-items: start;
+    gap: .35rem .8rem;
+  }
+  .qv-modal .qv__info { display: contents; }
+  .qv-modal .qv__media { grid-area: media; align-self: start; }
+  .qv-modal .qv__media img { max-height: 148px; border-radius: var(--radius-sm); }
+  .qv-modal #qv-cat { grid-area: cat; align-self: end; margin: 0 !important; line-height: 1.3; }
+  .qv-modal #qv-rating { grid-area: rating; margin: 0 !important; font-size: .78rem; line-height: 1.3; }
+  .qv-modal #qv-price { grid-area: price; margin: 0 !important; gap: .3rem; font-size: 1rem; line-height: 1.35; }
+  .qv-modal .qv__info > .stock { grid-area: stock; margin: 0 !important; font-size: .74rem; line-height: 1.35; }
+  .qv-modal #qv-desc {
+    grid-area: desc;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+    max-height: 4.35em;
+    margin: .25rem 0 0 !important;
+    font-size: .84rem;
+    line-height: 1.45;
+  }
+  .qv-modal .qv__info > .d-flex.my-3 {
+    grid-area: actions;
+    display: flex;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    gap: .65rem !important;
+    margin: .35rem 0 0 !important;
+  }
+  .qv-modal .qv__info > .d-flex.my-3 .qty { flex: 0 0 auto; }
+  .qv-modal #qv-add { flex: 1 1 auto; min-width: 0; white-space: nowrap; }
+  .qv-modal .qv__info > .d-flex.gap-2 {
+    grid-area: links;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem !important;
+    margin: 0 !important;
+  }
+  .qv-modal .qv__info > .d-flex.gap-2 .btn { flex: 1 1 auto; min-width: 0; font-size: .8rem; }
+}
+
+/* Keep the quantity/Add to Cart row distinct from the secondary links row. */
+@media (max-width: 767.98px) {
+  .qv-modal .qv__info > .d-flex.my-3 { grid-area: actions; }
+  .qv-modal .qv__info > .d-flex.gap-2:not(.my-3) { grid-area: links; }
+}

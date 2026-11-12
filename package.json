@@ -1,4 +1,9 @@
 {
+  "scripts": {
+    "test:api": "php scripts/test_apis.php",
+    "test:browser": "node scripts/playwright_audit.js",
+    "test:shop-ui": "node scripts/test_shop_ui.js"
+  },
   "devDependencies": {
     "@playwright/test": "^1.64.1"
   }

@@ -52,8 +52,13 @@ $pageTitle = 'Create account | NOVA Home';
         <div class="row g-3">
           <div class="col-md-6"><label class="form-label" for="r-email">Email</label><input class="form-control" id="r-email" name="email" type="email" autocomplete="email" required><div class="invalid-feedback">Enter a valid email.</div></div>
           <div class="col-md-6"><label class="form-label" for="r-phone">Phone</label><input class="form-control" id="r-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="01012345678" pattern="^(\+20|0)?1[0125][0-9]{8}$" required><div class="invalid-feedback">Enter a valid Egyptian mobile number.</div></div>
-          <div class="col-md-6"><label class="form-label" for="r-pass">Password</label><input class="form-control" id="r-pass" name="password" type="password" autocomplete="new-password" minlength="8" required><div class="invalid-feedback">Use at least 8 characters.</div></div>
+          <div class="col-md-6"><label class="form-label" for="r-pass">Password</label><input class="form-control" id="r-pass" name="password" type="password" autocomplete="new-password" minlength="8" aria-describedby="r-pass-hint" required><p class="form-text small text-muted-nova mb-0" id="r-pass-hint">Use at least 8 characters.</p><div class="invalid-feedback">Use at least 8 characters.</div></div>
           <div class="col-md-6"><label class="form-label" for="r-pass2">Confirm password</label><input class="form-control" id="r-pass2" name="password_confirm" type="password" autocomplete="new-password" minlength="8" required><div class="invalid-feedback">Passwords must match.</div></div>
+        </div>
+        <div class="form-check mt-3">
+          <input class="form-check-input" id="r-terms" name="terms" type="checkbox" required>
+          <label class="form-check-label small" for="r-terms">I agree to the <a href="../terms.html" target="_blank" rel="noopener">Terms of Service</a> and <a href="../privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</label>
+          <div class="invalid-feedback">Please accept the terms to continue.</div>
         </div>
         <p class="alert alert-danger mt-3 mb-0" id="cust-register-error" hidden tabindex="-1" role="alert"></p>
         <button class="btn btn-nova w-100 mt-4" type="submit" id="cust-register-btn">Create account</button>
@@ -93,6 +98,7 @@ var CO_RETURN = <?= json_encode($returnTo, JSON_HEX_TAG | JSON_UNESCAPED_SLASHES
         phone: document.getElementById('r-phone').value.trim(),
         password: pass.value,
         password_confirm: pass2.value,
+        terms_accepted: document.getElementById('r-terms').checked,
         csrf_token: form.dataset.csrf
       })
     }).then(function (r) {
@@ -111,6 +117,9 @@ var CO_RETURN = <?= json_encode($returnTo, JSON_HEX_TAG | JSON_UNESCAPED_SLASHES
 <script src="../js/settings.js"></script>
 <script src="../js/catalog.js"></script>
 <script src="../js/cart.js"></script>
+<script src="../js/ui/search.js"></script>
+<script src="../js/ui/quick-view.js"></script>
+<script src="../js/ui/shell.js"></script>
 <script src="../js/ui.js"></script>
 <script src="../js/main.js"></script>
 </body>

@@ -4,7 +4,12 @@
  */
 declare(strict_types=1);
 
-$baseUrl = 'http://localhost/nova-home/nova-home/';
+if (PHP_SAPI !== 'cli') {
+    http_response_code(404);
+    exit;
+}
+
+$baseUrl = rtrim((string) (getenv('NOVA_BASE_URL') ?: 'http://localhost/nova-home/nova-home/'), '/') . '/';
 
 function http_req(string $method, string $path, $data = null, array $headers = [], ?string &$cookieJar = null): array {
     global $baseUrl;
@@ -30,6 +35,11 @@ function http_req(string $method, string $path, $data = null, array $headers = [
 
     curl_setopt($ch, CURLOPT_HTTPHEADER, $h);
     $response = curl_exec($ch);
+    if ($response === false) {
+        $error = curl_error($ch);
+        curl_close($ch);
+        return ['status' => 0, 'headers' => '', 'body' => '', 'json' => null, 'error' => $error];
+    }
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
     curl_close($ch);
@@ -76,11 +86,16 @@ $res = http_req('GET', 'api/store-settings.php');
 assert_test($res['status'] === 200, 'GET api/store-settings.php returns 200', $res['status']);
 $keys = array_keys($res['json']['data'] ?? []);
 sort($keys);
-$expectedKeys = ['address', 'business_name', 'delivery_fee', 'email', 'free_delivery_threshold', 'phone'];
+$expectedKeys = ['address', 'business_name', 'delivery_cities', 'delivery_fee', 'email', 'free_delivery_threshold', 'phone'];
 sort($expectedKeys);
-assert_test($keys === $expectedKeys, 'Exactly 6 supported keys returned', $keys);
+assert_test($keys === $expectedKeys, 'Only the 7 allowlisted public settings fields are returned', $keys);
 assert_test(is_int($res['json']['data']['delivery_fee']), 'delivery_fee is integer', $res['json']['data']['delivery_fee']);
 assert_test(is_int($res['json']['data']['free_delivery_threshold']), 'free_delivery_threshold is integer', $res['json']['data']['free_delivery_threshold']);
+$cities = $res['json']['data']['delivery_cities'] ?? [];
+$cityKeys = array_keys($cities);
+sort($cityKeys);
+assert_test($cityKeys === ['alexandria', 'cairo', 'fayoum', 'giza', 'mansoura', 'other', 'tanta'], 'Delivery city keys are the canonical 7-city set', $cityKeys);
+assert_test(($cities['other'] ?? '') === 'Other Egypt', 'The other city label matches checkout and estimator copy', $cities['other'] ?? null);
 $resPost = http_req('POST', 'api/store-settings.php');
 assert_test($resPost['status'] === 405, 'POST api/store-settings.php returns 405', $resPost['status']);
 
@@ -117,9 +132,9 @@ echo "\n6. Testing api/orders.php negative validation...\n";
 $res = http_req('GET', 'api/orders.php');
 assert_test($res['status'] === 405, 'GET api/orders.php returns 405', $res['status']);
 $res = http_req('POST', 'api/orders.php', '');
-assert_test($res['status'] === 400, 'Empty POST returns 400', $res['status']);
+assert_test($res['status'] === 401 && ($res['json']['code'] ?? '') === 'auth_required', 'Unauthenticated order submission is rejected before parsing (401)', $res['status']);
 $res = http_req('POST', 'api/orders.php', ['csrf_token' => 'invalid_csrf']);
-assert_test($res['status'] === 400, 'Invalid CSRF returns 400', $res['status']);
+assert_test($res['status'] === 401 && ($res['json']['code'] ?? '') === 'auth_required', 'Unauthenticated order submission is rejected before CSRF validation (401)', $res['status']);
 
 // 7. api/order.php authorization / IDOR tests
 echo "\n7. Testing api/order.php authorization & IDOR...\n";
@@ -152,5 +167,26 @@ $res = http_req('GET', 'api/customer-addresses.php');
 assert_test($res['status'] === 401, 'Unauth GET api/customer-addresses.php returns 401', $res['status']);
 $res = http_req('POST', 'api/customer-addresses.php');
 assert_test($res['status'] === 401, 'Unauth POST api/customer-addresses.php returns 401', $res['status']);
+
+// 10. customer registration requires explicit Terms/Privacy acceptance at the API.
+echo "\n10. Testing customer registration consent enforcement...\n";
+$consentCookieJar = tempnam(sys_get_temp_dir(), 'nova-consent-');
+$consentCsrfRes = http_req('GET', 'api/csrf.php', null, [], $consentCookieJar);
+$consentToken = $consentCsrfRes['json']['data']['csrf_token'] ?? '';
+assert_test($consentCsrfRes['status'] === 200 && $consentToken !== '', 'Registration consent test obtains a session CSRF token');
+if ($consentToken !== '') {
+    $res = http_req('POST', 'api/customer-register.php', [
+        'terms_accepted' => false,
+        'csrf_token' => $consentToken,
+    ], [], $consentCookieJar);
+    assert_test(
+        $res['status'] === 400 && str_contains((string) ($res['json']['error'] ?? ''), 'accept the Terms'),
+        'Registration API rejects missing Terms/Privacy consent before account creation',
+        $res['status']
+    );
+}
+if (is_file($consentCookieJar)) {
+    unlink($consentCookieJar);
+}
 
 echo "\nSummary: {$passed} passed, {$failed} failed.\n";

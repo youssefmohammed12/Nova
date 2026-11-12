@@ -11,16 +11,22 @@ NOVA.DELIVERY_FEE = 60;
 /* Base path prefix so pages inside account/ or admin/ can reuse the same assets and links. */
 NOVA.BASE = /(^|\/)(account|admin)\//.test(location.pathname) ? '../' : '';
 /* Gallery paths: prefer the DB primary image when the loader resolved one,
-   otherwise fall back to the legacy filename convention. */
+   otherwise fall back to the site favicon as a neutral placeholder. */
 NOVA.imgs = id => {
   const found = (NOVA.products || []).find(p => p.id === id);
   if (found && found.image) {
     const src = (NOVA.BASE && !found.image.startsWith(NOVA.BASE)) ? `${NOVA.BASE}${found.image}` : found.image;
     return [src];
   }
-  return [`${NOVA.BASE}assets/images/${id}.svg`];
+  return [`${NOVA.BASE}favicon.svg`];
 };
 NOVA.fmt = n => 'EGP ' + n.toLocaleString('en-US');
+/* Escape untrusted database/API text before interpolating it into HTML templates.
+   Admin-entered product/category names, descriptions, specs and material labels
+   remain plain text in storage; output contexts must encode them. */
+NOVA.escapeHTML = value => String(value == null ? '' : value).replace(/[&<>"']/g, char => ({
+  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+}[char]));
 NOVA.find = id => NOVA.products.find(p => p.id === id);
 NOVA.catName = id => (NOVA.categories.find(c => c.id === id) || {}).name || '';
 /* Shop the Look scene: presentation-only hotspot coordinates (percentages of the scene). */
@@ -31,13 +37,40 @@ NOVA.lookSpots = [
   { id: 'sahara-vase', x: 55, y: 55 }
 ];
 /* Demo delivery estimates per city (frontend prototype only, not courier guarantees). */
+/* Complete fallback only; the public settings endpoint supplies the authoritative city labels. */
 NOVA.deliveryCities = {
   cairo: { name: 'Cairo', days: '1–2 working days' },
   giza: { name: 'Giza', days: '1–2 working days' },
   alexandria: { name: 'Alexandria', days: '2–3 working days' },
+  mansoura: { name: 'Mansoura', days: '2–4 working days' },
+  tanta: { name: 'Tanta', days: '2–4 working days' },
   fayoum: { name: 'Fayoum', days: '2–4 working days' },
   other: { name: 'Other Egypt', days: '3–5 working days' }
 };
+NOVA.populateDeliveryCitySelect = (select, includePlaceholder = false) => {
+  if (!(select instanceof HTMLSelectElement)) return;
+  const previousValue = select.value;
+  const previousLabel = select.selectedOptions[0]?.textContent?.trim().toLowerCase() || '';
+  select.replaceChildren();
+  if (includePlaceholder) {
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Choose city';
+    select.appendChild(placeholder);
+  }
+  Object.entries(NOVA.deliveryCities).forEach(([id, city]) => {
+    const option = document.createElement('option');
+    option.value = id;
+    option.textContent = city.name;
+    select.appendChild(option);
+  });
+  const match = [...select.options].find(option =>
+    option.value === previousValue ||
+    (previousLabel && option.textContent.trim().toLowerCase() === previousLabel)
+  );
+  if (match) select.value = match.value;
+};
+
 NOVA.delivery = {
   key: 'nova_delivery_city',
   def: 'cairo',

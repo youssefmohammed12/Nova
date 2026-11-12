@@ -153,8 +153,7 @@ if (!function_exists('nova_cities')) {
             'mansoura' => 'Mansoura',
             'tanta' => 'Tanta',
             'fayoum' => 'Fayoum',
-            'other' => 'Other',
-            'other egypt' => 'Other Egypt',
+            'other' => 'Other Egypt',
         ];
     }
 }

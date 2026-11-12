@@ -91,8 +91,8 @@ Product catalogue · Search · Search suggestions · Filters · Sorting · Quick
 | **Orders** | ✅ Phases 3/4/7/9/10 + 2026-10-17 auth requirement: customer COD orders with transactional DB persistence (authenticated sessions only — `api/orders.php` returns `401` for guests); server-side revalidation of pricing and delivery fees; session-authorized success retrieval; customer order history with SQL-level ownership |
 | **Admin data** | ✅ Phases 5–7: authenticated dashboard, category management, product management with image/spec repeaters, order status progression, store settings management |
 | **Product API / cart / checkout wiring** | ✅ Phase 2: catalogue APIs live, storefront reads MySQL. ✅ Phase 3: checkout submits real orders; cart cleared upon server confirmation. ✅ Phase 8: storefront synchronized with `settings` via `GET api/store-settings.php` + `js/settings.js` |
-| **Project-wide audit & verification** | ✅ Phase 11: 48 routes inventoried and tested; 128 Playwright assertions passed with 0 JS errors; Lighthouse 100/100 Accessibility, 100/100 Best Practices, 100/100 SEO; test data cleanly purged; historical data preserved |
-| **Product Photography Migration** | ✅ Complete — 14 authentic, high-res Pexels photographs cropped 1:1 and converted to optimized WebP (~780 KB total); `v_image_path()` updated; DB & `seed.sql` synchronized; single-image gallery thumbnail handling perfected; verified across cards, PDP, quickview, cart, wishlist, admin form |
+| **Latest local audit & verification (2026-11-12)** | ✅ Full browser workflow: 139 assertions passed, 0 failed; 0 page JS errors, 0 unexpected console errors, 0 unexpected HTTP errors (7 exact signed-out profile 401s classified separately); API suite: 38 passed; PHP syntax: 57 files clean; JS syntax: 17 files clean; npm audit: 0 vulnerabilities; product/category image references: 19 records, 0 missing files; local sensitive-directory requests: 403; response security headers verified on static/PHP/API routes; exact targeted test cleanup completed. Historical Lighthouse 100/100 results remain from the earlier Phase 11 audit and were not re-run in this pass. |
+| **Product Photography Migration** | ✅ Complete — 14 authentic, high-res Pexels photographs cropped 1:1 and converted to WebP: 1,050,924 bytes (~1,026.3 KiB / 1.05 MB; ~73.3 KiB average). The additional homepage editorial craft image is 81,650 bytes (~79.7 KiB), for about 1.13 MB combined. `v_image_path()` updated; DB & `seed.sql` synchronized; all current database image paths verified to exist. |
 | **GitHub publication preparation** | ✅ Complete — repository initialized with safe `.gitignore`, tracked config example (`demo_access => false`), public `README.md` with 23 real screenshots in `docs/screenshots/`, readiness fixes, and deployment documentation |
 
 ---
@@ -190,7 +190,7 @@ Both fonts loaded from Google Fonts CDN.
 | **Vanilla JavaScript** | ES2020+ | All behaviour; `NOVA` global namespace |
 | **Bootstrap** | 5.3.8 (CDN) | Grid, offcanvas nav, modals, toasts, form validation, utility classes |
 | **Bootstrap Icons** | 1.13.1 (CDN) | Icon library throughout the UI |
-| **Swiper** | 14.3.0 (CDN) | Bestsellers carousel on the homepage only |
+| **Swiper** | 14.3.0 (CDN) | Featured-product carousel on the homepage only |
 | **Google Fonts** | — | Instrument Sans + Newsreader via CDN |
 
 ### Current Backend (implemented, verified 2026-10-17)
@@ -231,6 +231,7 @@ nova-home/
 ├── checkout.html            # Checkout form (signed-in customers only, COD)
 ├── order-success.html       # Post-checkout confirmation (server-authoritative)
 ├── favicon.svg              # Site favicon
+├── .htaccess                # Shared response security headers for static + PHP routes
 ├── README.md                # Public project introduction and setup guide
 ├── PROJECT_GUIDE.md         # This file
 │
@@ -269,13 +270,24 @@ nova-home/
 │   ├── products.js          # NOVA init + frontend-only constants (NO product records since Phase 2)
 │   ├── cart.js              # Cart, wishlist, recently viewed — localStorage CRUD + custom events
 │   ├── catalog.js           # Fetches categories+products from api, emits catalog:ready/error
-│   ├── ui.js                # Header/footer injection, product card, toast, Quick View, search suggestions, Shop the Look, delivery progress
+│   ├── ui.js                # Shared card/toast/delivery/Shop-the-Look facade and event delegation
 │   ├── settings.js          # Applies store settings from api/store-settings.php to the UI
-│   └── main.js              # Page-specific behaviour dispatched by data-page, demo forms, admin/account previews
+│   ├── main.js              # Shared page dispatcher, page helpers, recently-viewed renderer, admin/account previews
+│   ├── ui/
+│   │   ├── search.js         # Delegated header/shop search autocomplete
+│   │   ├── quick-view.js     # Shared product Quick View modal behavior
+│   │   └── shell.js          # Header/footer templates, customer auth and logout UI
+│   └── pages/
+│       ├── home.js           # Homepage controller
+│       ├── shop.js           # Search, filters, sorting, wishlist mode
+│       ├── product.js        # Product detail, gallery, delivery estimator
+│       ├── cart.js           # Cart lines, quantity controls, summary
+│       ├── checkout.js       # Auth gate, profile prefill, order submission
+│       └── success.js        # Session-authorized order summary display
 │
 ├── assets/
 │   └── images/              # Category artwork (SVG) + real product photography (WebP)
-│       ├── hero.svg  promo.svg  shop-look.svg  cat-*.svg
+│       ├── hero.svg  cat-*.svg          # hero = PHP image fallback; cat-* = shared category art
 │       └── products/<slug>/main.webp    # 14 licensed photographs — see docs/IMAGE_SOURCES.md
 │
 ├── config/                  # Configuration — DB credentials stay OUT of Git
@@ -335,15 +347,21 @@ nova-home/
 
 All JS lives in the `NOVA` global namespace, initialised by `products.js`.
 
-**Script load order on every page:**
+**Common script load order:**
 ```html
 <script src="js/products.js"></script>   <!-- must be first -->
+<script src="js/settings.js"></script>
+<script src="js/catalog.js"></script>
 <script src="js/cart.js"></script>
+<script src="js/ui/search.js"></script>
+<script src="js/ui/quick-view.js"></script>
+<script src="js/ui/shell.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/pages/<page>.js"></script>  <!-- page-specific controller -->
 <script src="js/main.js"></script>
 ```
 
-Pages inside `account/` and `admin/` use `../js/` relative paths.
+Shared UI modules load before `ui.js`: `js/ui/search.js` registers `NOVA.searchUI.bind()`, `js/ui/quick-view.js` registers `NOVA.quickViewUI.open()`, and `js/ui/shell.js` registers `NOVA.shellUI` for the header/footer and customer-auth shell. The root `ui.js` facade retains product-card/toast/delivery/Shop-the-Look rendering and delegated add/wishlist events. Matching page controllers load after `ui.js` and before `main.js`; each registers one handler in `NOVA.pageControllers`. `main.js` exposes a frozen `NOVA.pageHelpers` interface and dispatches the matching handler when the catalogue is ready. The six page modules are `home.js`, `shop.js`, `product.js`, `cart.js`, `checkout.js`, and `success.js`. Pages inside `account/` use `../js/` relative paths.
 
 ---
 
@@ -360,12 +378,12 @@ Pages inside `account/` and `admin/` use `../js/` relative paths.
 | `NOVA.FREE_DELIVERY_OVER` | `1500` | Free delivery threshold in EGP |
 | `NOVA.DELIVERY_FEE` | `60` | Flat delivery fee in EGP |
 | `NOVA.BASE` | `string` | `'../'` for pages inside subdirs, `''` for root |
-| `NOVA.imgs(id)` | `fn → string[]` | Returns `[main, alt2, alt3]` SVG paths for a product |
+| `NOVA.imgs(id)` | `fn → string[]` | Returns the DB-backed primary image path when available, otherwise the neutral favicon fallback |
 | `NOVA.fmt(n)` | `fn → string` | Formats a number as `'EGP 1,234'` |
 | `NOVA.find(id)` | `fn → product\|undefined` | Looks up a product by ID |
 | `NOVA.catName(id)` | `fn → string` | Returns a category display name |
 | `NOVA.lookSpots` | `Array` | 4 hotspot definitions for Shop the Look |
-| `NOVA.deliveryCities` | `Object` | 5 city keys with `name` and `days` strings |
+| `NOVA.deliveryCities` | `Object` | 7 canonical city keys; labels come from `GET api/store-settings.php`, while `days` are indicative frontend copy |
 | `NOVA.delivery` | `Object` | Delivery city state: `get()`, `set(id)`, `info(id)`, `ids()`, `key`, `def` |
 | `NOVA.search` | `Object` | Search: `popular[]`, `norm(q)`, `suggestions(q, limit)` |
 
@@ -424,13 +442,13 @@ Pages inside `account/` and `admin/` use `../js/` relative paths.
 
 ### `ui.js` — Shared UI Layer
 
-**Responsibility:** Header/footer injection, product card HTML, toast, Quick View modal, search suggestions panel, Shop the Look renderer, delivery progress bar. Exposed on `NOVA.ui`.
+**Responsibility:** Product card HTML, toast, Shop the Look renderer, delivery progress bar, and shared delegated product/cart/wishlist interactions. Exposed on `NOVA.ui`. Header/footer and customer auth are owned by `js/ui/shell.js`; search autocomplete by `js/ui/search.js`; Quick View behavior by `js/ui/quick-view.js`.
 
 **`NOVA.ui`:**
 
 | Method | Description |
 | :--- | :--- |
-| `mount()` | Called once on `DOMContentLoaded`. Injects header/footer, binds cart badge, binds delivery progress, binds search, binds click delegation for add/wish/quick/look. |
+| `mount()` | Called once on `DOMContentLoaded`. Injects header/footer through `NOVA.shellUI`, binds customer auth/category navigation, skeletons, cart badge and delivery progress, delegates search setup to `NOVA.searchUI.bind()`, and binds add/wish/quick/look interactions. |
 | `card(p, wishSet?)` | Returns product card HTML string. `wishSet` is an optional `Set<id>` for batch rendering without repeated localStorage reads. |
 | `toast(msg)` | Shows Bootstrap Toast; falls back to a DOM element if Bootstrap is unavailable. |
 | `openQuick(id, trigger?)` | Populates and opens the shared Quick View modal. Stores the trigger element for focus return on close. |
@@ -446,31 +464,42 @@ Pages inside `account/` and `admin/` use `../js/` relative paths.
 
 **Header/footer** are injected into `#site-header` and `#site-footer` slots on every page. In a future PHP backend these become `include` files.
 
+### `js/ui/search.js` — Search Autocomplete
+
+**Responsibility:** Owns delegated focus/input/keyboard/click handling for the shared header search and shop filter search. Exposes `NOVA.searchUI.bind()` and uses the existing `NOVA.search` catalogue helpers.
+
+### `js/ui/quick-view.js` — Quick View Modal
+
+**Responsibility:** Owns Quick View state, product data binding, quantity controls, wishlist synchronization, modal open/close and focus restoration. Exposes `NOVA.quickViewUI.open()`. `NOVA.ui.openQuick()` remains a compatibility alias to this method.
+
+### `js/ui/shell.js` — Storefront Shell and Customer Auth
+
+**Responsibility:** Owns header/footer HTML templates, category navigation synchronization, customer session lookup, signed-in/guest navigation rendering, logout action and `auth:change` dispatch. Exposes `NOVA.shellUI.header()`, `footer()` and `mount()`.
+
 ---
 
 ### `main.js` — Page-Specific Behaviour
 
-**Responsibility:** Dispatches page behaviour based on `document.body.dataset.page`. Each page gets its own function inside `pages`. Also runs `demoForms()`, `adminPreview()`, and `accountPreview()` on every page.
+**Responsibility:** Exposes the shared page helper interface, dispatches handlers registered in `NOVA.pageControllers` based on `document.body.dataset.page`, renders the shared Recently Viewed section, and runs `demoForms()`, `adminPreview()`, and `accountPreview()`. Page-specific storefront controllers live under `js/pages/`; `main.js` no longer contains shop/product/cart/checkout/success page implementations.
+
+`NOVA.pageHelpers` is a frozen dependency surface shared with page controllers: `fmt`, `ui`, `products`, `$`, `params`, `grid`, `debounce`, `line`, `customerAuthed`, and `CO_LOGIN`. Each controller destructures only the helpers it uses.
 
 **Page keys (matched to `data-page` attribute):**
 
 | `data-page` value | File | What it does |
 | :--- | :--- | :--- |
-| `home` | `index.html` | Renders category grid, featured products, bestseller Swiper, recently viewed, Shop the Look |
-| `shop` | `shop.html` | Filter/sort/search state machine, renders catalogue grid, wishlist mode banner |
-| `product` | `product.html` | PDP: gallery, specs, qty, add, wish, delivery estimator, sticky CTA, related products, recently viewed |
-| `cart` | `cart.html` | Cart lines, qty controls, summary, delivery progress |
-| `checkout` | `checkout.html` | Form validation, order snapshot, redirect to success |
-| `success` | `order-success.html` | Reads + validates sessionStorage snapshot, renders order summary |
+| `home` | `index.html` + `js/pages/home.js` | Renders category grid, featured products, Popular Picks carousel, recently viewed, and Shop the Look |
+| `shop` | `shop.html` + `js/pages/shop.js` | Filter/sort/search state machine, catalogue grid, wishlist mode banner |
+| `product` | `product.html` + `js/pages/product.js` | PDP: gallery, specs, quantity, wishlist, delivery estimator, sticky CTA, related products, recently viewed |
+| `cart` | `cart.html` + `js/pages/cart.js` | Cart lines, quantity controls, summary, delivery progress |
+| `checkout` | `checkout.html` + `js/pages/checkout.js` | Authentication gate, profile/address prefill, validation, server-side order submission |
+| `success` | `order-success.html` + `js/pages/success.js` | Reads the order from the session-authorized `api/order.php`; no client-side order snapshot is trusted |
 
-**`demoForms()`** — Attaches submit handlers to `#demo-login`, `#demo-register`, `#demo-profile`, `#demo-settings`, `#demo-product-form`. Validates honestly but never saves. Shows a "demo only" toast.
+**`demoForms()`** — Attaches submit handlers to `#demo-login`, `#demo-register`, `#demo-profile`, `#demo-settings`, `#demo-product-form`. Validates honestly but never saves. Shows a “demo only” toast.
 
-**`adminPreview()`** — Renders real catalogue data into admin tables (`#ap-rows`, `#ac-rows`). Provides live product filter by name and category. Populates product form when `?id=` is present.
+**`adminPreview()`** — Renders real catalogue data into admin tables (`#ap-rows`, `#ac-rows`). Provides live product filtering by name and category. Populates the product form when `?id=` is present.
 
-**`accountPreview()`** — Renders the real local wishlist (`NOVA.wish.ids()`) into `#account-wish-grid`. Listens for `wishlist:change` to re-render.
-
----
-
+**`accountPreview()`** — Renders the local wishlist (`NOVA.wish.ids()`) into `#account-wish-grid` and listens for `wishlist:change` to re-render.
 ## 9. State Management
 
 ### localStorage Keys
@@ -547,19 +576,19 @@ by test. Legacy snapshots left over in existing browsers are simply ignored.
 ## 10. Business Rules
 
 > [!NOTE]
-> All rules below are **DEMO/FRONTEND** constants. They live in `js/products.js` as `NOVA.FREE_DELIVERY_OVER` and `NOVA.DELIVERY_FEE`. Do not hardcode these values anywhere else — always reference the constants. The backend will eventually own these values in a settings table.
+> Cart limits and UI behaviour are frontend constants. Delivery pricing is stored in the `settings` table and exposed through the public, allowlisted `api/store-settings.php` response; `js/products.js` values are safe fallbacks only. Delivery-city keys and labels are served from `nova_cities()` through the same endpoint. ETA strings are illustrative frontend copy, not courier guarantees.
 
 | Rule | Current value | Source of truth | Demo? |
 | :--- | :--- | :--- | :--- |
-| **Delivery fee** | EGP 60 | `NOVA.DELIVERY_FEE` (`products.js`) | ✅ Demo |
-| **Free delivery threshold** | EGP 1,500 | `NOVA.FREE_DELIVERY_OVER` (`products.js`) | ✅ Demo |
+| **Delivery fee** | EGP 60 fallback | `settings.delivery_fee` via `api/store-settings.php` / `js/settings.js`; `products.js` is fallback only | ✅ Demo |
+| **Free delivery threshold** | EGP 1,500 fallback | `settings.free_delivery_threshold` via `api/store-settings.php` / `js/settings.js`; `products.js` is fallback only | ✅ Demo |
 | **Cart quantity minimum** | 1 | `QTY_MIN` constant in `cart.js` | ✅ Demo |
 | **Cart quantity maximum** | 10 | `QTY_MAX` constant in `cart.js` | ✅ Demo |
 | **Recently viewed max** | 6 | `RECENT_MAX` constant in `cart.js` | ✅ Demo |
 | **Search suggestion limit** | 5 (default), max 10 | `NOVA.search.suggestions(q, 5)` | ✅ Demo |
 | **Payment method** | Cash on delivery only | Static copy in header and checkout | ✅ Demo |
 | **Checkout** | Signed-in customer account required (guest path removed 2026-10-17) | `api/orders.php` 401s unauthenticated POSTs; login/registration return via whitelisted `?return=checkout` | ✅ Live |
-| **Stock status** | All items shown as "In stock" | Hardcoded in Quick View and PDP | ✅ Demo |
+| **Stock status** | Availability is not tracked | No inventory/stock model exists; PDP and Quick View disclose the limitation | ✅ Demo |
 | **Egyptian phone validation** | `required`, `type="tel"`, browser-native | Checkout form HTML5 validation | ✅ Demo |
 
 **Demo delivery estimates (DEMO only — not courier guarantees):**
@@ -569,8 +598,12 @@ by test. Legacy snapshots left over in existing browsers are simply ignored.
 | `cairo` | Cairo | 1–2 working days |
 | `giza` | Giza | 1–2 working days |
 | `alexandria` | Alexandria | 2–3 working days |
+| `mansoura` | Mansoura | 2–4 working days |
+| `tanta` | Tanta | 2–4 working days |
 | `fayoum` | Fayoum | 2–4 working days |
 | `other` | Other Egypt | 3–5 working days |
+
+City keys and display labels are served by `nova_cities()` through `GET api/store-settings.php`; the ETA text remains indicative UI copy, not a backend delivery promise.
 
 Default city: `cairo` (fallback if key is missing or invalid).
 
@@ -597,13 +630,13 @@ Default city: `cairo` (fallback if key is missing or invalid).
 - **Where:** All product cards (`.quick-btn`), Shop the Look list rows
 - **Module:** `ui.js` (`openQuick`, `qvSyncQty`, `qvSyncWish`)
 - **How it works:** Single shared Bootstrap modal (`#quickModal`), populated on-demand from `NOVA.find(id)`. No duplicated product state.
-- **Features:** Image, name, category, rating, price (with discount badge), stock note, description, quantity control (1–10), Add to Cart, Wishlist toggle, "View Full Details" link
+- **Features:** Image, name, category, price (with discount badge), availability caveat, "No reviews yet" copy, description, quantity control (1–10), Add to Cart, Wishlist toggle, "View Full Details" link
 - **Accessibility:** Focus returns to the triggering element on modal close
-- **Limitation:** Shows first product image only; no gallery. Stock info is always "In stock, ships within 2 working days" (static copy).
+- **Limitations:** Shows first product image only; no gallery. Availability is not tracked because no inventory model exists. Rating/review metadata is not presented as verified customer feedback.
 
 ### Recently Viewed
 - **Where:** Homepage (`#recent-section`) and PDP (`#recent-section`)
-- **Module:** `cart.js` (`NOVA.recent`), `main.js` (`renderRecent`)
+- **Module:** `cart.js` (`NOVA.recent`), `main.js` (`NOVA.renderRecentlyViewed()`), called by the homepage and PDP controllers
 - **How it works:** PDP calls `NOVA.recent.add(p.id)` on load. Homepage and PDP render the stored IDs as product cards.
 - **Max:** 6 products, newest first, deduplicated
 - **Invalid products:** Unknown IDs are silently skipped on read
@@ -633,7 +666,7 @@ Default city: `cairo` (fallback if key is missing or invalid).
 ### Delivery Estimator
 - **Where:** PDP (`#ship-est`)
 - **Module:** `products.js` (`NOVA.delivery`, `NOVA.deliveryCities`), `main.js` (`product()`)
-- **How it works:** Dropdown of 5 cities. Selected city is stored in `nova_delivery_city`. Checkout pre-selects the stored city. Demo text appended: "(demo estimate)".
+- **How it works:** Dropdown is populated from the seven-city map returned by `api/store-settings.php`. Selected city is stored in `nova_delivery_city`; checkout uses the same canonical city keys. ETA copy is indicative and says "Delivery times are estimates and may vary."
 - **Limitation:** Delivery days are static estimates, not real courier data.
 
 ### Sticky Mobile Add to Cart
@@ -755,7 +788,7 @@ C:/xampp/php/php.exe scripts/create_admin.php "Full Name" "admin@example.com" < 
 
 **Public consumers — live vs static (honest status):**
 - **Live (DB):** `api/orders.php` delivery pricing (fee + threshold), admin dashboard count/order rows, `includes/header.php` threshold text (partial — not yet included by any page)
-- **Static (frontend constants, unchanged this phase):** the entire JS storefront (`NOVA.DELIVERY_FEE`/`FREE_DELIVERY_OVER` in `js/products.js`, cart progress, PDP estimator, checkout summary display) and `includes/footer.php` contact block (phone/email/address hardcoded). Migrating storefront display text to settings is later-phase storefront work — **not claimed as live**
+- **Frontend fallbacks and presentation:** `js/products.js` holds fallback fee/threshold values and indicative ETA copy. `js/settings.js` replaces delivery pricing and city labels from the allowlisted `api/store-settings.php` response. Cart progress, PDP estimator and checkout summary read the synchronized `NOVA` values. `includes/footer.php` remains an unused PHP mirror; live storefront pages currently render the JS footer.
 - No settings history/audit log, no password fields, no config-file editor (per spec)
 
 **Mutations:** POST + `require_admin(false)` + `nova_verify_csrf()` + prepared statements + PRG flashes (`?ok=status`, `?ok=saved`, `?err=csrf|invalid_status|not_found|invalid_key|…`). No new API endpoints (plain PHP forms per Step 23). Dashboard "View all" → `orders.php`; sidebar Orders/Settings now point at the real pages (soon badges removed — implemented).
@@ -802,11 +835,11 @@ Complete visual redesign of all administrative pages into a professional, cohesi
 
 | Piece | Behavior |
 | :--- | :--- |
-| `api/store-settings.php` | **GET only** (non-GET → 405). **Mandatory allowlist** of exactly six public keys (`business_name`, `phone`, `email`, `address` as strings; `delivery_fee`, `free_delivery_threshold` as **integers**) read via `nova_setting()`; junk query params ignored; `Cache-Control: no-store` so admin edits appear on the next page load; safe 500 + `error_log()` on faults; returns no HTML/currency strings/internals |
-| `js/settings.js` (new, loaded on all 14 storefront pages after `products.js`) | Mirrors the `catalog.js` pattern: immediate single fetch (`cache: 'no-store'`), type-validates all six fields before accepting any, stores in `NOVA.storeSettings` (`{loaded, error, data}`), then **the single controlled sync point**: `NOVA.DELIVERY_FEE = fee; NOVA.FREE_DELIVERY_OVER = threshold`; dispatches `settings:ready` (or `settings:error`). On failure the `products.js` fallback constants stand (display-only fallback, clearly not "loaded") and the page keeps working; a later load recovers |
+| `api/store-settings.php` | **GET only** (non-GET → 405). **Mandatory allowlist** of six public settings fields plus the canonical `delivery_cities` map (`business_name`, `phone`, `email`, `address` as strings; `delivery_fee`, `free_delivery_threshold` as **integers**) read via `nova_setting()`; junk query params ignored; `Cache-Control: no-store` so admin edits appear on the next page load; safe 500 + `error_log()` on faults; returns no HTML/currency strings/internals |
+| `js/settings.js` (loaded across customer-facing root/account pages after `products.js`) | Mirrors the `catalog.js` pattern: immediate single fetch (`cache: 'no-store'`), type-validates six settings fields and the canonical city map before accepting the payload, stores in `NOVA.storeSettings` (`{loaded, error, data}`), then **the single controlled sync point**: `NOVA.DELIVERY_FEE = fee; NOVA.FREE_DELIVERY_OVER = threshold`; dispatches `settings:ready` (or `settings:error`). On failure the `products.js` fallback constants stand (display-only fallback, clearly not "loaded") and the page keeps working; a later load recovers |
 | `js/ui.js` (`applyStoreSettings()` + one-time hook in `mount()`) | Covers both load orderings (already loaded → apply now; else `settings:ready` with `{once:true}` — no duplicate listeners, no re-render loops). Patches: announcement bar (shared `announcementText()` wording, configured threshold), `data-delivery-note`/`data-delivery-info`, footer contact (`data-nova-tel/email/address/business` hooks added to `footer()`; **link targets validated before writing `tel:`/`mailto:` hrefs**, `textContent` used — no unsafe concatenation), then dispatches **one** `cart:change` so every computation-based consumer (cart summary, checkout summary, free-delivery progress, PDP estimator — all already listening) refreshes from the synced constants |
 
-**Synced UI (all verified live with temporary values, then restored):** announcement "Free delivery over EGP X…" · footer tel/mailto/address/copyright business name · PDP estimator fee + `data-delivery-info` (city list + ETA unchanged, "(demo estimate)" kept) · cart summary + progress (`threshold>0` guard pre-existing; zero-threshold safe) · checkout summary. Client values are display estimates only — order POST still sends only `{slug, qty}`.
+**Synced UI (all verified live with temporary values, then restored):** announcement "Free delivery over EGP X…" · footer tel/mailto/address/copyright business name · PDP estimator fee + `data-delivery-info` (city list + ETA unchanged; estimate disclaimer retained) · cart summary + progress (`threshold>0` guard pre-existing; zero-threshold safe) · checkout summary. Client values are display estimates only — order POST still sends only `{slug, qty}`.
 
 **Delivery rule consistency:** UI `subtotal >= threshold → free else fee` matches `api/orders.php` exactly — proven across **below** (fee 77 UI+order), **exactly-at** (Free/0), and **above** (Free/0) threshold cases with changed settings; fake client `price/subtotal/delivery_fee/total` ignored by the server. Settings restored to originals (60/1500 + original contacts) and verified in MySQL; historical orders' totals never recalculated.
 
@@ -860,8 +893,8 @@ Complete visual redesign of all administrative pages into a professional, cohesi
   cat:     "decor",                // string: must be a key in NOVA.categories
   price:   890,                    // number: current price in EGP (integer)
   old:     1100,                   // number (optional): original price — drives discount badge
-  rating:  4.7,                    // number: 0–5
-  reviews: 38,                     // number: review count (integer)
+  rating:  4.7,                    // legacy catalogue metadata; not shown as a customer review rating
+  reviews: 38,                     // legacy count; no verified review system exists yet
   best:    true,                   // boolean (optional): bestseller flag — used in Swiper
   isNew:   true,                   // boolean (optional): new-arrival flag — used in badge
   desc:    "...",                  // string: product description (one paragraph)
@@ -898,14 +931,7 @@ Complete visual redesign of all administrative pages into a professional, cohesi
 | `copper-rack` | Copper Utensil Rack | kitchen | 610 |
 | `minimal-clock` | Minimal Wall Clock | decor | 560 |
 
-**Image naming convention:**  
-For product `{id}`, the three gallery images are:
-```
-assets/images/{id}.svg        → main image
-assets/images/{id}-2.svg      → alternate image 1
-assets/images/{id}-3.svg      → alternate image 2
-```
-Currently all are SVG placeholders. The backend should replace filename assumptions with database-driven image records that store real URLs/paths.
+**Image storage (current):** Product image paths are stored in `product_images.image_path` and returned by `api/products.php` / `api/product.php`; frontend code must use the returned paths rather than constructing filenames from a slug. The baseline seed uses one primary WebP per product at `assets/images/products/<slug>/main.webp`. Additional gallery rows can be represented by `product_images` records with ordered `sort_order` values. Attribution and asset provenance live in `docs/IMAGE_SOURCES.md`.
 
 ---
 
@@ -1223,14 +1249,14 @@ The following issues were identified in the final full-project audit and have be
 | Payment is "Cash on delivery" only | Scope decision | Future: payment gateway integration (e.g. Paymob, Fawry) |
 | Cart and wishlist are browser-local | Scope decision | Future: server-persisted carts for signed-in customers |
 | Delivery estimates are informational | Demo rule | Future: real courier API integration |
-| Stock is always shown as "In stock" | Demo copy | Future: real inventory tracking |
+| Inventory is not tracked | Intentional scope limitation; PDP and Quick View disclose this | Only add stock management after a separate product decision |
 | No email/SMS notifications, no password reset | Not built | Future: transactional email/SMS provider |
 | Single administrator role (no RBAC/audit log) | Scope decision | Future: multi-tier roles and activity logging |
 | Newsletter form does not save | Demo form | Future: mailing list integration |
 | Social media links are placeholders | Scope decision | Fill in when real accounts exist |
 | Automated database backups not scheduled | Not built | Future: cron dumps to offsite storage |
 
-**No unresolved technical defects remain from the audit.**
+The current maintenance findings and re-verification history are tracked in `docs/SITE_AUDIT_FIXES.md`. Do not treat this table as proof that no regressions can exist; rerun the focused checks after code changes.
 
 ---
 
@@ -1393,7 +1419,7 @@ Chronological record of major completed stages. This is for navigation, not a Gi
 | **Free-Delivery Progress** | ARIA progressbar on cart and checkout; unlocked state; responsive to `cart:change`. |
 | **Quick View** | Shared Bootstrap modal with gallery image, qty, add to cart, wishlist, full details link. |
 | **Search Suggestions** | Autocomplete panel for header search and shop search; keyboard navigation; popular searches chips. |
-| **Delivery Estimator** | PDP city dropdown with demo estimates; city synced to `nova_delivery_city` and reused in checkout. |
+| **Delivery Estimator** | PDP city dropdown with estimated delivery times; city synced to `nova_delivery_city` and reused in checkout. |
 | **Sticky Mobile Add to Cart** | IntersectionObserver-driven sticky CTA on PDP; hidden at load, visible only after scroll past primary CTA. |
 | **Shop the Look** | Homepage hotspot scene with 4 products; hotspot buttons and product list both open Quick View. |
 | **Order Success** | Reads validated sessionStorage snapshot; renders order ref, items, totals, delivery address. |
@@ -1423,12 +1449,15 @@ Chronological record of major completed stages. This is for navigation, not a Gi
 | **InfinityFree Public Demo** | Interactive hosted-portfolio demo (2026-10-17), separate from the dev-only demo: (1) new config switch `public_demo_access` (default `false` in the tracked example) — works with `env=production`/`debug=false`, fully independent of `demo_access`; (2) new endpoints `api/public-demo-customer-login.php` + `api/public-demo-admin-login.php`, gated ONLY on `public_demo_access===true` + POST + CSRF; they sign in FIXED identities (`demo.customer@novahome.eg`, `demo.admin@novahome.eg`) — no id/email/role from the client, never "the first admin", never the owner's personal account; both use `nova_customer_login()`/`nova_admin_login()` so sessions, regeneration, `require_*()` authorization, and logout separation are unchanged; (3) `account/login.php` + `admin/login.php` render the demo buttons when EITHER switch is on (public wins for endpoint/label), with shared-mutable-data and editable-environment notices in public mode; (4) `database/demo-data.infinityfree.sql` — phpMyAdmin-friendly (no CREATE DATABASE/USE), insert-only + NOT EXISTS guards resolving by email/slug, creates the demo customer, 2 addresses, 5 sample orders (all statuses, refs `NH-YYYYMMDD-DEA1xx`) and 9 line items with totals recomputed from catalog+settings, plus the dedicated demo admin (bcrypt hash, plaintext undisclosed); safe to re-import, skips creation when the demo customer already has orders; (5) `database/demo-reset.infinityfree.sql` — destructive demo-DB-only reset step; documented 3-step phpMyAdmin reset sequence (reset → seed.sql → demo-data) restores the full baseline (5 categories / 14 products / 14 images / 42 specs / 6 settings / demo accounts / 2 addresses / 5 orders + 9 items); (6) README gained a Live demo section with the two entry-point links + public-demo documentation; `docs/development/INFINITYFREE_DEMO_SETUP.md` runbook added; (7) verified on an isolated production-style instance (`env=production`, `debug=false`) against a disposable DB: buttons render/hide with the switch, both sign-ins 200, wishlist slugs returned, all customer + admin pages 200, product/order/category/settings mutations persist, logout 302s, config-off → buttons gone + endpoints 403, dev endpoints stay 403 in production, health 404, SQL idempotent on double import, and the 3-step reset restored a mutated DB to baseline. |
 | **Authenticated Checkout** | Checkout now requires a signed-in customer account (2026-10-17): (1) `api/orders.php` gained a hard server-side gate — `nova_customer_user()` is checked immediately after the method guard and BEFORE any body parsing/database work; unauthenticated POSTs (including forged `customer_id` bodies) return `401 {"code":"auth_required"}` with no `orders`/`order_items` rows created and the client cart untouched; `orders.customer_id` now always comes from the re-checked session (`$me['id']`) — the old guest-NULL path was removed (schema unchanged; historical guest rows intact; admin sessions do not satisfy the gate); (2) `cart.html` checkout CTA got `id="cart-checkout"` and `main.js cart()` rewrites it to `account/login.php?return=checkout` for signed-out visitors; (3) `main.js checkout()` gates on `api/customer-auth.php` and `location.replace()`s signed-out visitors to the same login URL; a `401` during submit (session expiry) does the same WITHOUT clearing the cart (`NOVA.cart.clear()` still runs only after server confirmation); (4) safe return-to-checkout: `account/login.php` + `account/register.php` accept `?return=checkout`, whitelisted to the exact literal (never a raw URL — no open redirect), honored by the already-authenticated redirect, passed into the page JS as `CO_RETURN`, used by normal login, registration, and BOTH demo customer buttons (dev + public); both pages show an "An account is required to check out" notice and preserve the return on their cross-links; guest-checkout wording removed; (5) bug fix: profile prefill now strips whitespace from stored phones (e.g. '+20 112 345 6789') so the strict tel pattern validates the prefilled value; (6) docs: README + guide current-state sections updated (stale §11 "demo-only checkout" text rewritten to the real flow); (7) targeted tests on an isolated instance + disposable DB — 38/38 passed: anon 401 (plain + forged id, zero rows), cart CTA redirect, direct-`checkout.html` redirect, notices + cross-links preserve return, whitelist enforcement (evil URL → null), registration → checkout → order linked to the new customer (1430/60/1490, 2 items) + cart cleared only on success + history + `api/order.php` 200, session-expiry 401, demo customer → checkout → order linked to demo customer, admin session → 401 + admin dashboard regression, validation/CSRF 400s preserved; real local app re-verified read-only (unauth POST → 401, dev demo intact). No commit made; live site untouched. |
 
+| **Incremental Storefront and Shared UI Extraction; Hero Alignment (2026-11-12)** | Reframed the homepage hero image within its decorative backdrop with balanced insets at desktop and mobile widths. Extracted all six page controllers into `js/pages/*.js`. Split shared UI concerns into `js/ui/search.js`, `quick-view.js`, and `shell.js`, keeping `NOVA.ui` compatibility methods and delegated behavior. `main.js` now provides the frozen `NOVA.pageHelpers` interface and dispatcher. Updated the order-success route audit to wait for its settled empty state. Verification at that checkpoint: 137/137 browser assertions and 36/36 API checks. No feature, database schema, commit, or deployment change. |
+| **Full Changeset Audit and Security Hardening (2026-11-12)** | Reviewed the complete accumulated working tree; verified all database product/category image references; corrected photography size documentation; added shared frontend output escaping with product/category injection regression checks; made Playwright fail on unexpected console and HTTP errors; enforced Terms/Privacy acceptance in the customer-registration API and added a negative API test; refreshed the legal pages and handoff docs. Final local verification: 139/139 browser assertions, 38/38 API checks, 57 PHP and 17 JavaScript files syntax-clean, zero unexpected browser errors. No schema changes, commit, push, or deployment. |
+
 ---
 
 ## 29. Roadmap
 
 ### Current state
-Frontend complete and audited. Backend Phases 1–11, Real Photography Migration, UI Polish, Final UI Cleanup, Homepage Visual Improvements, Shop Page Redesign & Product Discovery, Shared Navbar & Footer Polish, Customer Account Redesign & Auth-Aware Navbar, Admin Portal Redesign, and Demo Sign-In & Dev Accounts complete and verified (2026-10-17): MySQL catalogue, authentic licensed WebP product photography, verified responsive UI with synchronized navigation and smooth interactions, real COD orders (authenticated customers only since 2026-10-17), session-authorized success retrieval, professionally redesigned admin management portal, settings sync, auth-aware storefront navbar with live customer dropdown / guest actions, redesigned customer account hub, customer order history with SQL-enforced ownership, directory hardening, development-only demo sign-in with dedicated customer account and production safety guards, GitHub publication preparation (repository hygiene, public README with real screenshots, and deployment documentation), and project-wide automated verification. Cart remains localStorage; cancellation/refunds/notifications/payment gateways are planned for future major milestones.
+Frontend and backend features are complete for the current portfolio-demo scope. Backend Phases 1–11, licensed WebP photography, UI polish, authenticated COD checkout, customer accounts/order history, admin management, settings sync, directory hardening, and GitHub publication preparation are complete. The 2026-11-12 maintenance pass completed the six page-controller extraction, separated shared shell/search/Quick View modules, added frontend output escaping for admin-managed catalogue text, enforced Terms/Privacy acceptance server-side during registration, and strengthened browser/API regression checks. Local verification is current as recorded in §2; the earlier Lighthouse 100/100 results are historical, not repeated in this pass. Cart remains localStorage; cancellation/refunds/notifications/payment gateways are planned for future major milestones.
 
 ### Next steps (in approximate order)
 
@@ -1441,7 +1470,7 @@ Frontend complete and audited. Backend Phases 1–11, Real Photography Migration
 | ✅ Session-authorized order read | `api/order.php` + session binding in `orders.php` + DB-rendered success page | Complete |
 | ✅ Phase 5 admin auth | `require_admin()` gateway, `api/admin-login.php`, `admin/login.php`/`index.php`/`logout.php`, CLI admin creation, throttle | Complete |
 | ✅ Phase 6 admin CRUD | `admin/products.php`/`categories.php`/`product-form.php` + shared partials, transactional save, toggle, guarded delete | Complete |
-| ✅ Phase 7 admin orders + settings | `admin/orders.php`/`order.php`/`settings.php`, whitelisted status transitions, 6-key settings with proven source-of-truth | Complete |
+| ✅ Phase 7 admin orders + settings | `admin/orders.php`/`order.php`/`settings.php`, whitelisted status transitions, six settings fields plus the canonical delivery-city map with proven source-of-truth | Complete |
 | ✅ Phase 8 storefront settings integration | `api/store-settings.php` + `js/settings.js` + `ui.js` sync — announcement/footer/PDP/cart/checkout driven by DB settings | Complete |
 | ✅ Phase 9 customer accounts | Registration/login/logout, sessions, profile, saved addresses, checkout order linking | Complete |
 | ✅ Phase 10 customer order history | `account/orders.php` + `account/order.php?ref=` with SQL ownership | Complete |
@@ -1515,4 +1544,4 @@ This prevents the guide from becoming misleading over time.
 
 ---
 
-*Last updated: 2026-10-17 · Frontend complete and audited; Backend Phases 1–11 complete and verified; Real Product Photography Migration complete; UI Bug Fixes & Visual Polish complete; Final UI Cleanup complete; Homepage Visual Improvements complete; Shop Page Redesign & Product Discovery complete; Shared Navbar & Footer Polish complete; Customer Account Redesign & Auth-Aware Navbar complete; Admin Portal Redesign complete; Demo Sign-In & Dev Accounts complete (dev-only one-click customer + admin sign-in with dedicated demo account, sample data, production safety guards, 14/14 Playwright tests passed).*
+*Last updated: 2026-11-12 — Full accumulated changeset audited locally; six page controllers and shared UI modules documented; storefront output escaping and Terms/Privacy consent enforced; root response security headers added; browser audit fails on unexpected console/HTTP errors; 139 browser and 38 API assertions passed; 57 PHP and 17 JavaScript files syntax-clean; npm audit clean; asset references verified. Public-host verification remains inconclusive due to an OpenResty challenge. No schema changes, commit, push, or deployment.*

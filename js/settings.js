@@ -1,9 +1,7 @@
-/* Store settings loader (Phase 8): fetches the PUBLIC read-only settings
-   endpoint once, validates the six supported fields, then synchronizes the
-   runtime delivery constants (NOVA.DELIVERY_FEE / NOVA.FREE_DELIVERY_OVER)
-   from the database. Emits 'settings:ready' (success) or 'settings:error'
-   on document. On failure the products.js fallback constants remain in use
-   and the page keeps working; a later page load recovers automatically. */
+/* Store settings loader: validates the public payload and synchronizes
+   delivery pricing + allowed city labels from the server. ETA copy remains
+   explicitly indicative and presentation-only. On failure, safe frontend
+   fallbacks remain available and the page continues to work. */
 (function () {
   window.NOVA = window.NOVA || {};
   const base = (NOVA.BASE || '');
@@ -24,6 +22,32 @@
         const fee = d.delivery_fee, threshold = d.free_delivery_threshold;
         if (!Number.isInteger(fee) || fee < 0 || !Number.isInteger(threshold) || threshold < 0) {
           throw new Error('settings money fields invalid');
+        }
+        const cities = d.delivery_cities;
+        if (!cities || typeof cities !== 'object' || Array.isArray(cities)) {
+          throw new Error('settings delivery cities invalid');
+        }
+        const cityEntries = Object.entries(cities);
+        if (!cityEntries.length || cityEntries.some(([id, name]) =>
+          !/^[a-z][a-z0-9_]*$/.test(id) || typeof name !== 'string' || !name.trim()
+        )) {
+          throw new Error('settings delivery cities invalid');
+        }
+        const etaByCity = {
+          cairo: '1–2 working days',
+          giza: '1–2 working days',
+          alexandria: '2–3 working days',
+          mansoura: '2–4 working days',
+          tanta: '2–4 working days',
+          fayoum: '2–4 working days',
+          other: '3–5 working days'
+        };
+        NOVA.deliveryCities = Object.fromEntries(cityEntries.map(([id, name]) => [
+          id,
+          { name: name.trim(), days: etaByCity[id] || '3–5 working days' }
+        ]));
+        if (!NOVA.deliveryCities[NOVA.delivery.get()]) {
+          NOVA.delivery.set(NOVA.delivery.def);
         }
         NOVA.storeSettings.data = d;
         NOVA.storeSettings.loaded = true;

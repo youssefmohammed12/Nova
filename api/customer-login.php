@@ -25,7 +25,7 @@ try {
     }
     $email = strtolower(trim((string) ($body['email'] ?? '')));
     $password = (string) ($body['password'] ?? '');
-    if (!v_email($email) || strlen($password) < 6) {
+    if (!v_email($email) || strlen($password) < 8) {
         nova_customer_login_failed();
         json_response(['success' => false, 'error' => 'Invalid email or password.'], 401);
     }

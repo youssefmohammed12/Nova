@@ -44,10 +44,10 @@ dedicated demo endpoints — see [Demo access](#demo-access) and the
 
 ### Storefront
 
-- Homepage with editorial hero, category discovery, bestsellers carousel, and "Shop the Look" collections
+- Homepage with editorial hero, category discovery, featured-product carousel, and "Shop the Look" collections
 - Product catalogue with **category navigation, live result counts, material facets, price filters, search, and sorting**
 - Search with keyboard-navigable suggestions
-- Product detail pages with gallery, specifications, ratings, and a delivery estimator
+- Product detail pages with gallery, specifications, a delivery estimator, an inventory disclaimer, and an honest "No reviews yet" state until verified reviews exist
 - **Quick View** modal from any product card
 - Wishlist (persisted per browser) with a shop "wishlist mode" and an account wishlist page
 - Shopping cart with a free-delivery progress indicator (localStorage-based)
@@ -78,11 +78,12 @@ dedicated demo endpoints — see [Demo access](#demo-access) and the
 
 - PHP 8.1+ with **PDO and prepared statements only** (emulated prepares disabled); no `mysqli` anywhere
 - Server-side validation on every input; prices and delivery fees are always recalculated from the database — client-submitted totals are never trusted
+- Database-derived storefront strings are HTML-escaped at template boundaries; registration requires Terms/Privacy acceptance in both the browser form and the server API
 - CSRF tokens on state-changing endpoints (checkout, logins, admin actions)
 - Session hardening: `session_regenerate_id(true)` on login, HttpOnly + SameSite=Lax cookies, Secure flag automatically enabled under HTTPS
 - Separate customer and administrator session state with server-side authorization gateways (`require_customer()`, `require_admin()`) — pages redirect unauthorized visitors themselves; nothing depends on hidden links
 - bcrypt password hashing for both customers and administrators
-- Sensitive directories (`config/`, `database/`, `includes/`, `scripts/`) blocked from direct web access via `.htaccess`
+- Sensitive directories (`config/`, `database/`, `includes/`, `scripts/`) blocked from direct web access via `.htaccess`; root response headers add `nosniff`, a strict referrer policy, anti-framing, and a restrictive permissions policy (locally verified on static, PHP, and API routes)
 - Development-only probe (`health.php`) and development-only one-click demo sign-in — both enforced **server-side** and disabled unless the local configuration explicitly says so
 
 ## Tech stack
@@ -124,7 +125,7 @@ Captured from the running application (desktop 1440×900, mobile 390×844). Cust
 
 ![Product detail page](docs/screenshots/product-detail.png)
 
-*Product detail — gallery, pricing, stock state, delivery information, and the city delivery estimator.*
+*Product detail — gallery, pricing, availability disclaimer, delivery information, and the city delivery estimator.*
 
 ![Quick View modal open on a product](docs/screenshots/quick-view.png)
 
@@ -146,7 +147,7 @@ Captured from the running application (desktop 1440×900, mobile 390×844). Cust
 
 ![Customer login with development demo option](docs/screenshots/customer-login.png)
 
-*Customer login. The "Explore Demo Account" card only renders when development demo access is enabled.*
+*Customer login. One-click access is controlled server-side: development demo locally, or the separate explicit public-demo switch on the hosted showcase.*
 
 ![Customer dashboard](docs/screenshots/customer-dashboard.png)
 
@@ -172,7 +173,7 @@ Captured from the running application (desktop 1440×900, mobile 390×844). Cust
 
 ![Administrator login](docs/screenshots/admin-login.png)
 
-*Administrator login. The one-click demo button appears only in development mode.*
+*Administrator login. One-click access is controlled server-side by the development switch locally or the separate public-demo switch on the hosted showcase.*
 
 ![Administrator dashboard](docs/screenshots/admin-dashboard.png)
 
@@ -376,6 +377,7 @@ enter real personal or payment information into the public demo.
 
 ```text
 nova-home/
+├── .htaccess               # Browser security headers for static + PHP responses
 ├── index.html  shop.html  product.html  cart.html  checkout.html  order-success.html
 ├── account/                # Customer area — server-rendered PHP pages behind require_customer()
 │   ├── index.php  orders.php  order.php  addresses.php  profile.php
@@ -387,17 +389,26 @@ nova-home/
 │   ├── login.php  logout.php
 │   └── *.html               # Legacy redirect stubs pointing at the PHP pages
 ├── api/                    # JSON endpoints: catalogue, checkout, orders, auth, CSRF, store settings,
-│                            # plus the development-only demo sign-in handlers
+│                            # development-only and explicitly opt-in public demo sign-in handlers
 ├── assets/images/          # Category artwork + real product photography (WebP) — see docs/IMAGE_SOURCES.md
 ├── config/                 # config.php (LOCAL, git-ignored), config.example.php (tracked), database.php (PDO factory)
 ├── css/                    # variables, base, components, pages, responsive
 ├── database/               # schema.sql, seed.sql, migrations/ (historical), backups/ (git-ignored)
 ├── docs/                   # Documentation
 │   ├── IMAGE_SOURCES.md    # Photography provenance & licensing
+│   ├── RELEASE_READINESS.md # Local checks and public-host release gates
 │   ├── screenshots/        # README screenshot gallery
-│   └── development/        # Local-only notes (git-ignored)
+│   └── development/        # Deployment runbooks and internal development notes
 ├── includes/               # bootstrap, functions, validation, auth gateways, header/footer/admin partials
-├── js/                     # products (config), catalog (API fetch), cart, ui, settings, main
+├── js/
+│   ├── pages/              # Six page controllers: home, shop, product, cart, checkout, success
+│   ├── ui/                 # Shared shell/auth, search autocomplete, and Quick View modules
+│   ├── products.js         # Storefront constants, formatting, and safe HTML escaping
+│   ├── catalog.js          # API-backed catalogue loading and normalization
+│   ├── cart.js             # Browser-local cart, wishlist, and recently-viewed state
+│   ├── settings.js         # Server-backed public store settings
+│   ├── ui.js               # Shared UI facade and delegated interactions
+│   └── main.js             # Page-controller dispatcher and account/admin previews
 └── scripts/                # CLI-only utilities: admin creation, demo seeding, audits, screenshot capture
 ```
 
@@ -433,7 +444,7 @@ Configuration rules that apply to every environment:
 - No email/SMS notifications, no password reset flow, and no order cancellation UI for customers.
 - Single administrator role — no multi-user RBAC or audit log yet.
 - Delivery estimates are informational demo values, not a courier integration.
-- No inventory/stock tracking; product pages show standard availability copy.
+- No inventory/stock tracking; product pages explicitly state that availability is not tracked.
 - Newsletter sign-up and social links are placeholders.
 - Automated database backups are not scheduled.
 
@@ -462,4 +473,5 @@ NOVA Home is **live on InfinityFree** as a portfolio demonstration (see [Live de
 
 - **[PROJECT_GUIDE.md](PROJECT_GUIDE.md)** — the deep development guide: architecture, data models, business rules, security rules, testing policy, and full changelog
 - **[docs/IMAGE_SOURCES.md](docs/IMAGE_SOURCES.md)** — photography provenance and licensing
+- **[docs/RELEASE_READINESS.md](docs/RELEASE_READINESS.md)** — latest local verification, repository hygiene, and outstanding public-host release checks
 - **[docs/development/INFINITYFREE_DEMO_SETUP.md](docs/development/INFINITYFREE_DEMO_SETUP.md)** — public demo deployment runbook: files to upload, SQL import order, enabling `public_demo_access`, and the demo-reset procedure

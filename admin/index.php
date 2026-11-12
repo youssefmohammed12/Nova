@@ -20,7 +20,7 @@ $pendingCount       = (int) $pdo->query("SELECT COUNT(*) FROM `orders` WHERE `st
 
 $recentOrders = $pdo->query(
     'SELECT `order_ref`, `customer_name`, `total`, `status`, `created_at`'
-    . ' FROM `orders` ORDER BY `id` DESC LIMIT 6'
+    . ' FROM `orders` ORDER BY `created_at` DESC, `id` DESC LIMIT 6'
 )->fetchAll();
 
 $adminTitle = 'Dashboard | NOVA Admin';
@@ -189,7 +189,7 @@ require __DIR__ . '/../includes/admin-head.php';
         </li>
         <li class="d-flex justify-content-between align-items-center py-1">
           <span class="text-muted-nova">Store Environment</span>
-          <span class="badge bg-success-subtle text-success">Production / Live</span>
+          <span class="badge <?= NOVA_ENV === 'production' ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' ?>"><?= e(ucfirst(NOVA_ENV)) ?></span>
         </li>
       </ul>
     </div>

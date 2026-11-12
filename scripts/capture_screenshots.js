@@ -120,8 +120,8 @@ async function main() {
     await shot(page, 'product-detail.png');
 
     await page.goto(BASE + 'shop.html', { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#shop-grid .product-card .quick-btn', { timeout: 15000 });
-    await page.locator('#shop-grid .product-card .quick-btn').first().click();
+    await page.waitForSelector('#shop-grid .product-card__media > a[data-quick]', { timeout: 15000 });
+    await page.locator('#shop-grid .product-card__media > a[data-quick]').first().click();
     await page.waitForSelector('#quickModal.show', { timeout: 8000 });
     await page.waitForTimeout(900); // modal fade + image
     await shot(page, 'quick-view.png');

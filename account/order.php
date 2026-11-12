@@ -123,6 +123,9 @@ $resolveItemImage = static function (?string $rawPath): string {
 <script src="../js/settings.js"></script>
 <script src="../js/catalog.js"></script>
 <script src="../js/cart.js"></script>
+<script src="../js/ui/search.js"></script>
+<script src="../js/ui/quick-view.js"></script>
+<script src="../js/ui/shell.js"></script>
 <script src="../js/ui.js"></script>
 <script src="../js/main.js"></script>
 </body>
