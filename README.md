@@ -1,416 +1,222 @@
 # NOVA Home
 
-A full-stack furniture and home-decor e-commerce website for the Egyptian market — product discovery, search and filtering, a shopping cart, Cash on Delivery checkout, customer accounts, and a complete administrator portal, built with plain PHP and MySQL.
+A full-stack home and decor e-commerce demo built for the Egyptian market. NOVA Home brings together a responsive storefront, product discovery, customer accounts, Cash on Delivery checkout, and an administrator portal.
 
-NOVA Home was built as a **full-stack portfolio project** to demonstrate production-style engineering across a real e-commerce flow: server-rendered account and admin areas, a JSON API driving a vanilla-JS storefront, session-based authentication, and a documented MySQL schema with safe seed data.
+**Live demo:** [nova-home.fast-page.org](https://nova-home.fast-page.org/) · [Customer demo](https://nova-home.fast-page.org/account/login.php) · [Admin demo](https://nova-home.fast-page.org/admin/login.php) · [Source code](https://github.com/youssefmohammed12/Nova)
 
-> [!IMPORTANT]
-> **Cash on Delivery is the only checkout method** — there is no online payment gateway. NOVA Home is a **portfolio demonstration**, not a commercial store. An interactive public demo is hosted on InfinityFree (see [Live demo](#live-demo)); its accounts use **shared, mutable demonstration data** that visitors can change and that may be reset.
+> **Portfolio project, not a commercial store.** Checkout supports Cash on Delivery only; no online payment gateway is connected. The hosted demo uses synthetic customer and administrator accounts with shared, changeable sample data. Do not enter real personal, address, or payment information.
 
----
+## What you can do
 
-## Live demo
+### Shop and discover products
+- Browse a responsive homepage, product catalogue, categories, and product details.
+- Search with keyboard-accessible suggestions; filter by category, material, and price; sort results.
+- Preview products with Quick View and inspect product images, specifications, and delivery information.
+- Add products to a browser-based cart or wishlist.
 
-A hosted, **interactive** demonstration runs on InfinityFree. Both routes lead
-to the standard login pages, where one-click demo buttons appear once the
-public-demo configuration is enabled on the server.
+### Customer account
+- Register, sign in, and manage a profile.
+- View a dashboard, order history, and order details.
+- Save and manage delivery addresses.
+- Access the wishlist from the account area.
 
-| Entry point | Link |
-| :--- | :--- |
-| **Explore Customer Demo** | [nova-home.fast-page.org/account/login.php](https://nova-home.fast-page.org/account/login.php) |
-| **Explore Admin Demo** | [nova-home.fast-page.org/admin/login.php](https://nova-home.fast-page.org/admin/login.php) |
+### Checkout and orders
+- Complete a Cash on Delivery checkout while signed in.
+- Review an order confirmation and view persisted orders from the account.
+- Have the server validate products and quantities and recalculate prices and delivery fees before saving an order.
 
-- The **customer** demo signs into a synthetic example account (`Sarah El-Masry`)
-  with sample orders, saved addresses, and a populated wishlist.
-- The **admin** demo signs into a dedicated demonstration administrator with the
-  **normal management functionality** — products, categories, order statuses,
-  and store settings all work and persist.
-- Both accounts share **mutable demonstration data**. Visitors can change it,
-  and it may be reset periodically — changes made by others can appear in your
-  session, and a reset can remove them.
-- Please **do not enter real sensitive personal or payment information**. This
-  is a portfolio showcase; use the demo identities, not your own details.
-- Checkout is **Cash on Delivery** only and **requires a signed-in account** —
-  the demo buttons cover that. The live database and private configuration are
-  never part of this repository.
+### Store administration
+- View store activity and dashboard metrics.
+- Create and edit products, manage product visibility, and maintain categories.
+- Review orders and update their supported fulfilment statuses.
+- Manage store identity and delivery settings.
 
-The public demo is powered by a separate `public_demo_access` setting and
-dedicated demo endpoints — see [Demo access](#demo-access) and the
-[deployment notes](docs/development/INFINITYFREE_DEMO_SETUP.md).
+## Try the live demo
 
----
+Open either login page above and use its **Explore Customer Demo** or **Explore Admin Demo** option.
 
-## Features
+- The customer account contains synthetic sample details, saved addresses, orders, and wishlist items.
+- The administrator demo has normal management permissions over the demo store, including catalogue, order-status, and settings changes.
+- Demo data is shared and mutable. Changes made by other visitors may be visible, and the dataset may be reset.
+- Use the demo data only. Never enter real customer information or sensitive details.
 
-### Storefront
+## Technology
 
-- Homepage with editorial hero, category discovery, featured-product carousel, and "Shop the Look" collections
-- Product catalogue with **category navigation, live result counts, material facets, price filters, search, and sorting**
-- Search with keyboard-navigable suggestions
-- Product detail pages with gallery, specifications, a delivery estimator, an inventory disclaimer, and an honest "No reviews yet" state until verified reviews exist
-- **Quick View** modal from any product card
-- Wishlist (persisted per browser) with a shop "wishlist mode" and an account wishlist page
-- Shopping cart with a free-delivery progress indicator (localStorage-based)
-- **Cash on Delivery checkout for signed-in customers** — an account is required to place an order; server-side validation and price recalculation throughout
-- Order confirmation page that renders the persisted order straight from the database
+| Area | Technologies |
+| --- | --- |
+| Server | PHP 8.1+, PDO, PHP sessions |
+| Database | MariaDB 10.4+ or MySQL 8+, InnoDB, **utf8mb4** |
+| Frontend | Semantic HTML, custom CSS, vanilla JavaScript |
+| UI libraries | Bootstrap 5.3.8, Bootstrap Icons 1.13.1, Swiper 14.3.0 |
+| QA tooling | Node.js 18+ and Playwright (optional) |
 
-### Customer accounts
-
-- Registration and login (bcrypt-hashed passwords, session-based)
-- Protected customer dashboard with order, address, and wishlist metrics
-- Order history and order detail pages with **SQL-enforced ownership** — one customer can never read another customer's orders
-- Saved address book (default address pre-fills checkout)
-- Profile management (name and contact phone)
-- Wishlist synced between the storefront and the account area
-- Auth-aware navbar: guests see Sign in / Register, signed-in customers see a personal menu
-
-### Admin portal
-
-- Dedicated administrator login with **per-session throttling** (5 failed attempts per minute → 429) and generic error messages
-- Dashboard with live store metrics, recent orders, and quick actions
-- Product management: search/filter/sort, create/edit with specification and image repeaters, visibility toggles (products are deactivated, never deleted, to protect order history)
-- Category management with product counts and guarded deletion
-- Order management with a supported status workflow (pending → confirmed → shipped → delivered / cancelled)
-- Store settings: business identity and delivery pricing rules that drive the live storefront
-- Shared admin shell with responsive sidebar, topbar, and mobile drawer
-
-### Security & engineering
-
-- PHP 8.1+ with **PDO and prepared statements only** (emulated prepares disabled); no `mysqli` anywhere
-- Server-side validation on every input; prices and delivery fees are always recalculated from the database — client-submitted totals are never trusted
-- Database-derived storefront strings are HTML-escaped at template boundaries; registration requires Terms/Privacy acceptance in both the browser form and the server API
-- CSRF tokens on state-changing endpoints (checkout, logins, admin actions)
-- Session hardening: `session_regenerate_id(true)` on login, HttpOnly + SameSite=Lax cookies, Secure flag automatically enabled under HTTPS
-- Separate customer and administrator session state with server-side authorization gateways (`require_customer()`, `require_admin()`) — pages redirect unauthorized visitors themselves; nothing depends on hidden links
-- bcrypt password hashing for both customers and administrators
-- Sensitive directories (`config/`, `database/`, `includes/`, `scripts/`) are blocked from direct web access via `.htaccess`; root response headers add `nosniff`, a strict referrer policy, anti-framing, a restrictive permissions policy, and a host-only one-year HSTS policy. The public host was rechecked after deployment on 2026-11-12: the directory rules and all five response headers, including the host-only one-year HSTS policy, were present.
-- Development-only probe (`health.php`) and development-only one-click demo sign-in — both enforced **server-side** and disabled unless the local configuration explicitly says so
-
-## Tech stack
-
-| Layer | Technology |
-| :--- | :--- |
-| Backend | PHP 8.1+ (developed and tested on PHP 8.2.12), plain PDO — no framework, no ORM |
-| Database | MariaDB 10.4 / MySQL 8 compatible (`utf8mb4`, InnoDB) |
-| Frontend | Semantic HTML5, hand-written CSS (5-file architecture), vanilla ES2020+ JavaScript — no React/Vue/Angular |
-| UI libraries | [Bootstrap 5.3.8](https://getbootstrap.com/), [Bootstrap Icons 1.13.1](https://icons.getbootstrap.com/), [Swiper 14.3.0](https://swiperjs.com/) — pinned CDN versions |
-| Typography | Instrument Sans + Newsreader (Google Fonts) |
-| Testing / tooling | Playwright (dev-only, for screenshot capture and browser audits) |
-
-**No build step is required.** There is no bundler, transpiler, or Composer install for normal runtime — you need a PHP + MySQL web server and the CDN assets reachable from the browser. Node.js is only needed if you want to run the optional developer tooling in `scripts/`.
-
----
+There is **no frontend build step** and no framework or ORM. The site runs on a PHP/MySQL web server; Node.js is only needed for the optional automated tests and developer scripts. The UI libraries and fonts are loaded from pinned external CDN resources.
 
 ## Screenshots
 
-The gallery is intentionally limited to **eight current captures**: two storefront viewports and one representative screen for each major shopping/account workflow. Desktop captures are 1440Ã—900; the mobile homepage is 390Ã—844. The cart and checkout use synthetic browser-only fixtures, and no order is submitted. Customer and admin captures use the local synthetic demo accounts.
+The gallery contains eight recent captures of the main storefront and shopping workflows. Open the section to view them.
+
+<details>
+<summary>View the NOVA Home screenshot gallery</summary>
 
 ### Storefront
 
-![NOVA Home homepage â€” desktop](docs/screenshots/homepage-desktop.png)
+![NOVA Home desktop homepage](docs/screenshots/homepage-desktop.png)
 
-*Homepage at desktop width, including the editorial hero and current navigation.*
+![NOVA Home mobile homepage](docs/screenshots/homepage-mobile.png)
 
-![NOVA Home homepage â€” mobile](docs/screenshots/homepage-mobile.png)
+![NOVA Home shop catalogue](docs/screenshots/shop-desktop.png)
 
-*Responsive homepage at a 390px mobile viewport.*
+![NOVA Home product details](docs/screenshots/product-detail.png)
 
-![NOVA Home shop](docs/screenshots/shop-desktop.png)
+### Shopping and customer account
 
-*Product catalogue with category navigation, filters, sorting and product cards.*
-
-![NOVA Home product detail](docs/screenshots/product-detail.png)
-
-*Product gallery, price, specifications and delivery information.*
-
-### Shopping and account workflows
-
-![NOVA Home shopping cart](docs/screenshots/cart.png)
-
-*Cart with a synthetic local fixture and delivery progress.*
+![NOVA Home cart](docs/screenshots/cart.png)
 
 ![NOVA Home checkout](docs/screenshots/checkout.png)
 
-*Cash on Delivery checkout filled with synthetic demo details; nothing is submitted.*
-
 ![NOVA Home customer dashboard](docs/screenshots/customer-dashboard.png)
-
-*Customer dashboard populated only with the local synthetic demo account.*
 
 ### Admin portal
 
 ![NOVA Home admin dashboard](docs/screenshots/admin-dashboard.png)
 
-*Admin dashboard; non-demo customer names in recent activity are masked in the capture.*
----
+</details>
 
-## Getting started
+## Run it locally
+
+These instructions use Windows and XAMPP. The same application can run on another Apache/PHP/MySQL setup with equivalent paths and configuration.
 
 ### Requirements
 
-- **PHP 8.1+** with the `pdo_mysql` extension
-- **Apache** (or any PHP-capable web server) — Apache must allow `.htaccess` overrides (`AllowOverride All`) so the directory-protection rules in `config/`, `database/`, `includes/`, and `scripts/` take effect
-- **MariaDB 10.4+ / MySQL 8+**
-- A modern browser; internet access for the pinned CDN assets (Bootstrap, icons, fonts)
-- Optional (developer tooling only): Node.js 18+ for Playwright screenshot/audit scripts
+- PHP 8.1+ with the PDO MySQL extension.
+- Apache with .htaccess support enabled (AllowOverride All).
+- MariaDB 10.4+ or MySQL 8+.
+- A modern browser and internet access for the external UI assets.
+- Optional: Node.js 18+ for the automated QA scripts.
 
-The instructions below use Windows + XAMPP, which is the environment the project was developed on. Any PHP/MySQL stack works — substitute the equivalent commands.
+### 1. Get the project
 
-### 1. Install and start the stack
-
-Install [XAMPP](https://www.apachefriends.org/) (or your preferred stack) and start **Apache** and **MySQL/MariaDB** from the control panel.
-
-### 2. Get the code
-
-Clone or download this repository into your web root, e.g. `C:\xampp\htdocs\nova-home\`.
-
-```text
-C:\xampp\htdocs\nova-home\     ← project root (contains README.md)
-```
-
-### 3. Create the database
-
-The schema creates and configures the database itself (`nova_home`):
+Start Apache and MySQL from the XAMPP Control Panel. Open Command Prompt and clone the repository into the XAMPP web root:
 
 ```bat
-C:\xampp\mysql\bin\mysql.exe -u root < database/schema.sql
-C:\xampp\mysql\bin\mysql.exe -u root nova_home < database/seed.sql
+cd C:\xampp\htdocs
+git clone https://github.com/youssefmohammed12/Nova.git nova-home
+cd nova-home
 ```
 
-Equivalent with a password prompt: `mysql -u root -p < database/schema.sql` then `mysql -u root -p nova_home < database/seed.sql`.
+The project root is the folder containing README.md.
 
-- `database/schema.sql` — all 10 tables, foreign keys, and constraints (idempotent: safe to re-run)
-- `database/seed.sql` — 5 categories, 14 products, 14 product photographs, 42 specifications, and 6 store settings
-- `database/migrations/001_customer_accounts.sql` is **historical** (it upgraded pre-existing databases in Phase 9). Fresh installs already get these tables from `schema.sql` — you do not run it on a clean setup.
+### 2. Create and seed the database
 
-Neither file contains personal data: a fresh install ships with **no customer accounts and no orders**.
+Run these commands from the project root in Command Prompt. The schema creates the nova_home database and its tables; the seed file inserts the sample catalogue and store settings.
 
-### 4. Create your local configuration
+```bat
+C:\xampp\mysql\bin\mysql.exe -u root < database\schema.sql
+C:\xampp\mysql\bin\mysql.exe -u root nova_home < database\seed.sql
+```
 
-The real configuration file is intentionally **not** committed to Git. Create it from the tracked template:
+If your MySQL root account has a password, add -p after -u root and enter it when prompted.
+
+### 3. Create your local configuration
+
+Copy the tracked example file:
 
 ```bat
 copy config\config.example.php config\config.php
 ```
 
-Then review `config/config.php` for your machine:
+Edit config/config.php and check the database connection values. The example uses the default local XAMPP database account (root with an empty password); change these values when your local setup differs.
 
-| Key | Local value | Notes |
-| :--- | :--- | :--- |
-| `env` | `'development'` | Use `'production'` on a live server |
-| `debug` | `true` locally | Must be `false` in production (controls on-screen error display) |
-| `demo_access` | `false` in the template | Development-only one-click demo. Requires `env => 'development'` too. **Never enable in production.** |
-| `public_demo_access` | `false` in the template | Public one-click demo for the hosted portfolio demo. Independent of `env`/`debug`. Set `true` only on the intentional public demo. |
-| `db.*` | Stock XAMPP defaults (`root`, empty password, `nova_home`) | Change to your own database user/password |
-| `base_url` | `null` (auto-detect) | Works at any local path. Set explicitly in production, e.g. `'/'` or `'/shop/'` |
+The example starts in development mode with local error display enabled, keeps **demo_access** disabled, sets **public_demo_access** to false, and lets **base_url** be detected automatically. Keep the real config/config.php private: it is ignored by Git and must never be committed.
 
-`config/config.php` is listed in `.gitignore` and must never be committed — that is where real credentials live.
+### 4. Create an administrator
 
-### 5. Create an administrator account
-
-No administrator exists in a fresh database, and none is ever created by a web request. Create one from the command line (CLI-only script; web requests to it return a bare 404):
+A fresh database has no administrator account. Create one from the project root:
 
 ```bat
-C:\xampp\php\php.exe scripts/create_admin.php "Your Name" "admin@example.com"
+C:\xampp\php\php.exe scripts\create_admin.php "Your Name" "admin@example.com"
 ```
 
-The script prompts for the password on stdin (minimum 8 characters) so it never appears in shell history, refuses duplicate emails, and stores only a bcrypt hash.
+The script asks for the password interactively. The password is not passed as a command-line argument, and the script stores a password hash rather than the plaintext password.
 
-### 6. Open the application
+### 5. Open the website
 
-If the project lives at `C:\xampp\htdocs\nova-home\`, visit:
+Visit:
 
 ```text
 http://localhost/nova-home/
 ```
 
-The application auto-detects its own base path (`base_url => null`), so copies placed in a differently named or nested folder keep working without configuration. This development machine keeps the project one level deeper, served as `http://localhost/nova-home/nova-home/` — also auto-detected.
+The application detects its base path automatically, so a differently named or nested local folder can also work. The development health endpoint is available at /health.php; it is intentionally unavailable in production.
 
-Quick health check (development environment only — it returns 404 in production):
+## Optional QA checks
 
-```text
-http://localhost/nova-home/health.php
-```
-
-### 7. (Optional) Enable the development demo experience
-
-The demo shortcuts are gated **server-side** by two independent conditions: `env === 'development'` **and** `demo_access === true`. In `config/config.php`:
-
-```php
-'env'         => 'development',
-'demo_access' => true,
-```
-
-Then seed the dedicated demo customer (CLI-only, safe to re-run):
+Node.js 18+ is required only for the automated checks. From the project root:
 
 ```bat
-C:\xampp\php\php.exe scripts/seed_demo_customer.php
+npm ci
+npm.cmd run test:syntax
 ```
 
-This creates the synthetic demo customer, two saved addresses, and five sample orders covering every fulfilment status. See [Demo access](#demo-access) below.
+With Apache running and the local site seeded, you can also run the focused browser and read-only release checks:
 
-### Troubleshooting
+```bat
+set NOVA_BASE_URL=http://localhost/nova-home/
+npm.cmd run test:shop-ui
+npm.cmd run test:release-readiness
+```
 
-| Symptom | Likely cause / fix |
-| :--- | :--- |
-| Blank page or HTTP 500 | Read the PHP error log (`C:\xampp\apache\logs\`); most often a wrong database credential in `config/config.php` |
-| `SQLSTATE[HY000] [1045] Access denied` | Database user/password in `config/config.php` do not match your MySQL setup |
-| `Unknown database 'nova_home'` | Run `database/schema.sql`, then `database/seed.sql`, in that order |
-| `health.php` shows `"status":"degraded"` | Seed data is incomplete — re-run `database/seed.sql` (it is idempotent) |
-| HTTP 403 when opening files under `config/`, `database/`, `includes/`, `scripts/` | **Expected** — `.htaccess` directory protection is working |
-| Directory protection seems to do nothing | Apache runs with `AllowOverride None` — enable `AllowOverride All` for the site (see notes below) |
-| Unstyled page / missing icons | The pinned CDN assets could not load — check internet access, or vendor the libraries locally |
-| Admin page redirects to login | Expected — create an account with `scripts/create_admin.php`, or use demo access in development |
-| Port 80 already in use | Change Apache's port in XAMPP and use `http://localhost:8080/…`, or stop the conflicting service |
+Change NOVA_BASE_URL to match your local project URL. The shop UI suite uses browser-local test state; the release-readiness suite performs GET-only checks. Run automated tests against a local development copy, never against real customer or production data.
 
----
+## How the application is structured
 
-## Demo access
+The storefront pages use vanilla JavaScript controllers and shared UI modules to load catalogue and store-setting data from the PHP JSON API. The cart and wishlist are stored in the browser. Customer and administrator pages are server-rendered PHP pages protected by server-side session checks.
 
-There are **two independent demo switches**, enforced server-side. Neither can be
-enabled by manipulating a URL or a client-side variable — the API handlers
-reject the request unless the configuration says so.
-
-### Development-only demo (local)
-
-- **Explore Demo Account** (customer login) and **Demo Admin Access** (admin
-  login) appear as one-click buttons **only** when `env => 'development'` **and**
-  `demo_access => true`. The committed example ships with `demo_access => false`
-  and the handlers return `403` unless both hold.
-- Demo data is created by `php scripts/seed_demo_customer.php` (CLI-only, safe to
-  re-run): a dedicated synthetic customer with sample orders across every status,
-  two saved addresses, and a populated wishlist. No real person's data is involved.
-- Keep `demo_access => false` (the default) and `env => 'production'` on any
-  public deployment.
-
-### Public hosted demo (InfinityFree)
-
-- **Explore Customer Demo** and **Explore Admin Demo** appear on the live login
-  pages **only** when `public_demo_access => true`. This switch is **independent
-  of `env`/`debug`**, so the public demo runs on a normal production
-  configuration (`env => 'production'`, `debug => false`).
-- The public endpoints (`api/public-demo-customer-login.php`,
-  `api/public-demo-admin-login.php`) sign in **fixed synthetic identities**
-  (`demo.customer@novahome.eg` / `demo.admin@novahome.eg`) created by
-  `database/demo-data.infinityfree.sql`. No customer id, email, or role can be
-  supplied by the client, and the admin demo is never "the first admin in the
-  table" nor the owner's personal account.
-- The admin demo has **full, normal administrative capability** (not read-only):
-  visitors can create/edit products, change visibility, manage categories, move
-  order statuses, and change store settings. Because the data is shared and
-  mutable, it can be reset — see the
-  [deployment runbook](docs/development/INFINITYFREE_DEMO_SETUP.md).
-- **Recommended public-demo production set:**
-  `'env' => 'production'`, `'debug' => false`, `'demo_access' => false`,
-  `'public_demo_access' => true`. Turn `public_demo_access` off to remove the
-  buttons and reject the endpoints entirely.
-
-There is no shared or default password to document: demo sign-in establishes a
-server-side session, and real accounts always authenticate through
-bcrypt-verified passwords. Both demo accounts use synthetic fixtures — do not
-enter real personal or payment information into the public demo.
-
----
-
-## Project structure
+At checkout, the browser sends product identifiers and quantities. The server validates the request, retrieves current product prices and delivery settings, recalculates the total, and stores the order in a database transaction.
 
 ```text
 nova-home/
-├── .htaccess               # Browser security headers for static + PHP responses
-├── index.html  shop.html  product.html  cart.html  checkout.html  order-success.html
-├── account/                # Customer area — server-rendered PHP pages behind require_customer()
-│   ├── index.php  orders.php  order.php  addresses.php  profile.php
-│   ├── login.php  register.php  logout.php
-│   └── wishlist.html        # Wishlist page (localStorage-backed, renders through the shared JS layer)
-├── admin/                  # Administrator portal — PHP pages behind require_admin()
-│   ├── index.php  products.php  product-form.php  categories.php
-│   ├── orders.php  order.php  settings.php
-│   ├── login.php  logout.php
-│   └── *.html               # Legacy redirect stubs pointing at the PHP pages
-├── api/                    # JSON endpoints: catalogue, checkout, orders, auth, CSRF, store settings,
-│                            # development-only and explicitly opt-in public demo sign-in handlers
-├── assets/images/          # Category artwork + real product photography (WebP) — see docs/IMAGE_SOURCES.md
-├── config/                 # config.php (LOCAL, git-ignored), config.example.php (tracked), database.php (PDO factory)
-├── css/                    # variables, base, components, pages, responsive
-├── database/               # schema.sql, seed.sql, migrations/ (historical), backups/ (git-ignored)
-├── docs/                   # Documentation
-│   ├── IMAGE_SOURCES.md    # Photography provenance & licensing
-│   ├── RELEASE_READINESS.md # Local checks and public-host release gates
-│   ├── screenshots/        # README screenshot gallery
-│   └── development/        # Deployment runbooks and internal development notes
-├── includes/               # bootstrap, functions, validation, auth gateways, header/footer/admin partials
-├── js/
-│   ├── pages/              # Six page controllers: home, shop, product, cart, checkout, success
-│   ├── ui/                 # Shared shell/auth, search autocomplete, and Quick View modules
-│   ├── products.js         # Storefront constants, formatting, and safe HTML escaping
-│   ├── catalog.js          # API-backed catalogue loading and normalization
-│   ├── cart.js             # Browser-local cart, wishlist, and recently-viewed state
-│   ├── settings.js         # Server-backed public store settings
-│   ├── ui.js               # Shared UI facade and delegated interactions
-│   └── main.js             # Page-controller dispatcher and account/admin previews
-└── scripts/                # CLI-only utilities: admin creation, demo seeding, audits, screenshot capture
+├── index.html, shop.html, product.html
+├── cart.html, checkout.html, order-success.html
+├── account/             Customer pages and account workflows
+├── admin/               Administrator portal
+├── api/                 PHP JSON endpoints
+├── assets/images/       Product and category imagery
+├── config/              Local configuration template and PDO setup
+├── css/                 Design tokens, base, components, pages, responsive styles
+├── database/            Schema, seed data, and historical migrations
+├── docs/                Project documentation and screenshots
+├── includes/            Shared PHP bootstrap, auth, validation, and layout
+├── js/                  Storefront controllers and shared UI modules
+└── scripts/              CLI utilities and automated tests
 ```
 
-How the pieces fit together: the storefront pages boot a vanilla-JS layer that fetches the catalogue from `api/*.php` and renders it with shared UI components; cart and wishlist live in `localStorage` and are validated against the catalogue before use. Server-rendered PHP pages power the account and admin areas, talk to MySQL through the shared PDO factory, and enforce authentication server-side. Checkout is the bridge: the cart submits item slugs and quantities to `api/orders.php`, which re-prices everything from the database and writes the order transactionally.
+## Security and deployment
 
----
+The project includes prepared PDO statements, server-side input validation, password hashing, CSRF protection for state-changing requests, hardened sessions, separate customer/admin authorization checks, order-ownership enforcement, and server-side order repricing. Sensitive directories are protected by .htaccess; the web server must honor those rules or provide equivalent access restrictions.
 
-## Photography and attribution
+For any public deployment:
 
-All catalog product photography is licensed under the [Pexels License](https://www.pexels.com/license/) and stored locally in `assets/images/products/`. Full provenance — photographer, source page, download date, processing details, and license — is documented in **[docs/IMAGE_SOURCES.md](docs/IMAGE_SOURCES.md)**. The project does not claim ownership of third-party photography; attribution is preserved as portfolio best practice even though the license does not require it.
+- Use HTTPS and a dedicated database account with only the permissions the application needs.
+- Set **env** to production and **debug** to false.
+- Keep config/config.php, database backups, and real customer data out of Git and the public web root.
+- Keep **demo_access** disabled in production. Set **public_demo_access** to true only on the intentional portfolio demo; leave it false on other deployments.
 
----
+This application needs a PHP runtime and a MySQL-compatible database. **GitHub Pages cannot host the PHP backend.** The public portfolio demonstration currently runs at [nova-home.fast-page.org](https://nova-home.fast-page.org/).
 
-## Security and deployment notes
+## Scope and current limitations
 
-Configuration rules that apply to every environment:
+- Cash on Delivery is the only checkout method; there is no card or mobile-wallet payment integration.
+- Cart and wishlist contents are stored in the visitor's browser. Orders are stored in the database.
+- Product stock is not tracked, and delivery estimates are informational rather than connected to a courier service.
+- Email/SMS order notifications and a password-reset flow are not implemented.
+- Product reviews are not currently collected or displayed as verified customer reviews.
 
-- **`config/config.php` must never be committed.** It is git-ignored; the tracked `config/config.example.php` contains only safe placeholders. Real secrets belong on the hosting environment only.
-- **Database backups must never be published.** `database/backups/` is git-ignored precisely because dumps can contain customer records and password hashes. The tracked `database/schema.sql` and `database/seed.sql` are the supported way to build an install — they contain no personal data.
-- **Development demo access must remain disabled in production** (`demo_access => false`, the shipped default, plus `env => 'production'`). Both conditions are enforced inside the API handlers themselves.
-- **The public demo is a separate, deliberate opt-in.** `public_demo_access => true` enables one-click sign-in for the two dedicated demo identities and is intended only for the intentional portfolio demonstration. Keep it `false` on any deployment that is not the public demo. Turning it off removes the buttons and makes the public demo endpoints return `403`. It does not affect the dev-only demo switch, order-ownership checks, CSRF, or any authorization guard.
-- **HTTPS is required for live hosting**, together with production-grade database credentials on a dedicated least-privilege MySQL user.
-- **PHP error display must be off publicly**: `env => 'production'` and `debug => false` keep errors in the server-side log instead of the response.
-- Private configuration and SQL files are additionally shielded by `.htaccess` (`Require all denied`). These rules only apply when Apache honors `.htaccess` (`AllowOverride` enabled) — on servers that ignore them, rely on placing the project outside the public web root or blocking those paths at the server level.
-- **GitHub hosts the repository, not the application.** GitHub Pages cannot run this project's PHP/MySQL backend; a real deployment needs a compatible PHP/MySQL (or PHP/MariaDB) hosting environment and the host-specific configuration described below.
+## Developer notes and credits
 
----
+- [PROJECT_GUIDE.md](PROJECT_GUIDE.md) — deeper architecture, data model, business rules, security conventions, and development guidance.
+- [docs/IMAGE_SOURCES.md](docs/IMAGE_SOURCES.md) — product photography sources and licensing information.
+- [docs/development/INFINITYFREE_DEMO_SETUP.md](docs/development/INFINITYFREE_DEMO_SETUP.md) — maintainer runbook for the hosted demo environment.
 
-## Known limitations
-
-- Cash on Delivery is the **only** payment method — no payment gateway (Paymob/Fawry etc.) is integrated.
-- The cart and wishlist are browser-local (`localStorage`); only placed orders persist server-side.
-- No email/SMS notifications, no password reset flow, and no order cancellation UI for customers.
-- Single administrator role — no multi-user RBAC or audit log yet.
-- Delivery estimates are informational demo values, not a courier integration.
-- No inventory/stock tracking; product pages explicitly state that availability is not tracked.
-- Newsletter sign-up and social links are placeholders.
-- Automated database backups are not scheduled.
-
----
-
-## Future deployment checklist
-
-NOVA Home is **live on InfinityFree** as a portfolio demonstration (see [Live demo](#live-demo)) and **prepared for GitHub publication**. The original hosting/database setup checks were completed on **2026-10-17**; public routes, production health behavior, response headers and directory restrictions received a read-only recheck on **2026-11-12**. The local Milestone 3/M4 changes have not been uploaded.
-
-- [x] Select hosting that supports PHP 8.1+ and MySQL/MariaDB with `pdo_mysql` (live stack: PHP 8.4.25, MariaDB 11.4.13)
-- [x] Create the production database and a dedicated least-privilege database user (catalog seeded and serving: 5 categories / 14 products / 14 images / 42 specs / 6 settings)
-- [x] Upload the codebase (excluding local-only `config/config.php`, `database/backups/`, `node_modules/`, and logs — `.gitignore` already excludes them)
-- [ ] Confirm the private `config/config.php` uses production credentials, `env => 'production'`, `debug => false`, and an explicit `base_url`. **2026-11-12 update:** the public `health.php` now returns `404`, consistent with production mode. The private file was deliberately not inspected, so `debug => false`, `base_url`, and credential quality still require owner-side confirmation.
-- [x] Keep development-only `demo_access` disabled in production. A previous direct endpoint check returned `403`; current public login pages expose only the dedicated public-demo buttons. Do not enable or invoke development-only demo endpoints on the hosted site.
-- [x] Public demo is enabled for this intentional portfolio demonstration: both customer and admin demo buttons were visible on their respective public login pages on 2026-11-12. No demo sign-in was attempted during this recheck.
-- [x] Apply `database/schema.sql` + `database/seed.sql` (and any newer migrations) to the production database; create the administrator via the CLI script or a secure one-off (admin authentication verified live through the dedicated demo administrator)
-- [x] Enable HTTPS and verify session cookies carry the `Secure` flag. Public browser metadata on 2026-11-12 showed `PHPSESSID` with `Secure`, `HttpOnly`, and `SameSite=Lax`; the browser runner could not guarantee a fully fresh cookie context.
-- [x] Verify `.htaccess` protection is honored (or replicate the deny rules in server config) — public recheck on 2026-11-12: `config/` and `includes/` returned `403`; `database/` and `scripts/` returned `404`. All four paths were inaccessible.
-- [x] Confirm `health.php` returns `404` — verified on the public host on 2026-11-12. A full PHP warning/error scan across every route has not been repeated in this pass and remains open.
-- [~] Public read-only smoke on 2026-11-12 covered homepage, Shop, one Product Details page, cart, checkout/sign-in redirect, registration, order-confirmation empty state, customer/admin login, protected customer/admin redirects, catalogue API, health probe, and sensitive-directory access. No visible PHP warnings or hosting challenge appeared. Authenticated account/admin management pages were not opened, and the local HSTS change has not been deployed; repeat the smoke and verify HSTS after the next approved upload.
-- [x] Add the real live-demo link to this README after successful deployment
-
----
-
-## Further documentation
-
-- **[PROJECT_GUIDE.md](PROJECT_GUIDE.md)** — the deep development guide: architecture, data models, business rules, security rules, testing policy, and full changelog
-- **[docs/IMAGE_SOURCES.md](docs/IMAGE_SOURCES.md)** — photography provenance and licensing
-- **[docs/RELEASE_READINESS.md](docs/RELEASE_READINESS.md)** — latest local verification, repository hygiene, and outstanding public-host release checks
-- **[docs/development/INFINITYFREE_DEMO_SETUP.md](docs/development/INFINITYFREE_DEMO_SETUP.md)** — public demo deployment runbook: files to upload, SQL import order, enabling `public_demo_access`, and the demo-reset procedure
+Product photographs are sourced from Pexels and used under the [Pexels License](https://www.pexels.com/license/). See the image-sources document for the individual source records.
