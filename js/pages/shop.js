@@ -125,7 +125,7 @@
       const curRange = ranges[s.price] || ranges.all;
       let l = allProds.filter(p =>
         (s.cat === 'all' || p.cat === s.cat) &&
-        (!s.q || p.name.toLowerCase().includes(s.q.toLowerCase()) || p.desc.toLowerCase().includes(s.q.toLowerCase())) &&
+        (!s.q || NOVA.search.matches(p, s.q)) &&
         matchMaterial(p.material, s.material) &&
         p.price >= curRange[0] && p.price <= curRange[1] &&
         (!s.wish || wishSet.has(p.id))
@@ -183,7 +183,7 @@
       }
 
       if (s.wish && !l.length) {
-        gridEl.innerHTML = '<div class="col-12"><div class="empty-state"><i class="bi bi-heart" aria-hidden="true"></i><h2 class="h4">Your wishlist is empty</h2><p>You have not saved any pieces yet. Tap the heart on any product to keep it here.</p><button class="btn btn-nova" type="button" id="exit-wishlist" data-action="reset-filters">Browse all products</button></div></div>';
+        gridEl.innerHTML = '<div class="col-12"><div class="empty-state"><i class="bi bi-heart" aria-hidden="true"></i><h2 class="h4">Your wishlist is empty</h2><p>You have not saved any pieces yet. Tap the heart on any product to keep it here.</p><button class="btn btn-nova" type="button" id="exit-wishlist-empty" data-action="reset-filters">Browse all products</button></div></div>';
       } else if (!l.length) {
         gridEl.innerHTML = '<div class="col-12"><div class="empty-state"><i class="bi bi-search" aria-hidden="true"></i><h2 class="h4">No pieces match your selection</h2><p>Try clearing some filters, selecting a different material, or resetting search to view all pieces.</p><button class="btn btn-ghost" type="button" id="reset-filters" data-action="reset-filters">Reset all filters</button></div></div>';
       } else {
@@ -236,7 +236,7 @@
         return;
       }
 
-      const resetBtn = e.target.closest('#reset-filters, #clear-all-filters, #sidebar-reset, #exit-wishlist, [data-action="reset-filters"]');
+      const resetBtn = e.target.closest('#reset-filters, #clear-all-filters, #sidebar-reset, [data-action="reset-filters"]');
       if (resetBtn) {
         s.q = '';
         s.cat = 'all';

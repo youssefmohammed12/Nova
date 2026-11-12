@@ -99,17 +99,38 @@
       };
       coPaint();
       coCity.closest('.col-md-6').appendChild(coDest);
+      coCity.setAttribute('aria-describedby', 'c-city-error co-dest');
       coCity.addEventListener('change', () => {
         if (NOVA.delivery.set(coCity.value)) coPaint();
       });
     }
     /* Real Phase 3 order submission: POST the form + cart to api/orders.php.
        Prices/totals are NOT trusted — the server recalculates everything. */
+    const phoneHasValidDigits = value => {
+      const digits = String(value || '').replace(/\D/g, '');
+      return /^[0-9\s()+.-]*$/.test(String(value || '')) && digits.length >= 8 && digits.length <= 15;
+    };
+    const syncFieldValidity = field => {
+      if (!field || !field.matches('input, select, textarea') || field.type === 'hidden') return;
+      if (field.id === 'c-phone') {
+        const phoneError = field.value && !phoneHasValidDigits(field.value)
+          ? 'Enter a phone number containing 8–15 digits.'
+          : '';
+        field.setCustomValidity(phoneError);
+      }
+      if (!form.classList.contains('was-validated')) return;
+      if (field.checkValidity()) field.removeAttribute('aria-invalid');
+      else field.setAttribute('aria-invalid', 'true');
+    };
+    form.addEventListener('input', e => syncFieldValidity(e.target));
+    form.addEventListener('change', e => syncFieldValidity(e.target));
+
     const coError = document.createElement('p');
     coError.className = 'alert alert-danger mt-3 mb-0';
     coError.id = 'co-error';
     coError.hidden = true;
     coError.setAttribute('role', 'alert');
+    coError.tabIndex = -1;
     form.appendChild(coError);
     const coFail = msg => {
       coError.textContent = msg;
@@ -120,6 +141,7 @@
     form.addEventListener('submit', e => {
       e.preventDefault();
       form.classList.add('was-validated');
+      form.querySelectorAll('input:not([type="hidden"]), select, textarea').forEach(syncFieldValidity);
       coError.hidden = true;
       const items = renderSummary();
       if (!items.length) {

@@ -50,7 +50,7 @@ $pageTitle = 'Profile | NOVA Home';
             <div class="col-md-6"><label class="form-label" for="p-phone">Phone number</label><input class="form-control" id="p-phone" name="phone" type="tel" autocomplete="tel" pattern="^(\+20|0)?1[0125][0-9]{8}$" required value="<?= e($me['phone'] ?? '') ?>"><div class="invalid-feedback">Enter a valid Egyptian mobile number.</div></div>
           </div>
           <p class="alert alert-danger mt-3 mb-0" id="cust-profile-error" hidden tabindex="-1" role="alert"></p>
-          <p class="alert alert-success mt-3 mb-0" id="cust-profile-ok" hidden role="status">Profile updated successfully.</p>
+          <p class="alert alert-success mt-3 mb-0" id="cust-profile-ok" hidden tabindex="-1" role="status">Profile updated successfully.</p>
           <div class="d-flex align-items-center gap-3 mt-4">
             <button class="btn btn-nova" type="submit" id="cust-profile-btn">Save changes</button>
           </div>
@@ -87,7 +87,7 @@ $pageTitle = 'Profile | NOVA Home';
         errBox.textContent = (res.j && res.j.error) || 'Unable to save your profile right now.';
         errBox.hidden = false; errBox.focus();
       })
-      .catch(function () { btn.disabled = false; btn.textContent = 'Save changes'; errBox.textContent = 'Could not reach the server. Please try again.'; errBox.hidden = false; });
+      .catch(function () { btn.disabled = false; btn.textContent = 'Save changes'; errBox.textContent = 'Could not reach the server. Please try again.'; errBox.hidden = false; errBox.focus(); });
   });
 })();
 </script>

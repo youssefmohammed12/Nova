@@ -54,7 +54,7 @@
     <div class="account-main">
       <div class="row g-3 g-lg-4" id="account-wish-grid"></div>
       <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
-        <a class="btn btn-ghost btn-sm" href="../shop.html?wish=1"><i class="bi bi-grid me-1" aria-hidden="true"></i>Open wishlist in shop view</a>
+        <a class="btn btn-ghost btn-sm" id="wish-open-shop-view" href="../shop.html?wish=1"><i class="bi bi-grid me-1" aria-hidden="true"></i>Open wishlist in shop view</a>
         <a class="btn btn-nova btn-sm" href="../shop.html">Explore more pieces</a>
       </div>
     </div>
@@ -91,7 +91,7 @@
       if (navEl && !navEl.querySelector('.cust-logout-btn')) {
         var outLink = document.createElement('a');
         outLink.href = 'logout.php';
-        outLink.className = 'cust-logout-btn text-danger';
+        outLink.className = 'cust-logout-btn account-side-logout';
         outLink.innerHTML = '<i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Sign out</span>';
         navEl.appendChild(outLink);
       }

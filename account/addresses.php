@@ -51,7 +51,7 @@ try {
   <div class="account-layout">
     <?php require __DIR__ . '/../includes/account-side.php'; ?>
     <div class="account-main">
-      <p class="alert alert-success" id="addr-ok" hidden role="status"></p>
+      <p class="alert alert-success" id="addr-ok" hidden tabindex="-1" role="status"></p>
       <p class="alert alert-danger" id="addr-error" hidden tabindex="-1" role="alert"></p>
       <?php if (!$addressRows): ?>
         <div class="account-card mb-4 text-center py-4" id="addr-empty">
@@ -63,19 +63,19 @@ try {
       <div id="addr-list" class="row g-3 mb-4">
 <?php foreach ($addressRows as $a): ?>
         <div class="col-md-6" data-addr-id="<?= e((string) $a['id']) ?>">
-          <div class="account-card h-100<?= (int)$a['is_default'] === 1 ? ' addr-card--default' : '' ?>">
+          <div class="account-card addr-card h-100<?= (int)$a['is_default'] === 1 ? ' addr-card--default' : '' ?>">
             <div class="d-flex justify-content-between align-items-start mb-2">
               <div>
-                <strong><?= e((string) $a['recipient_name']) ?></strong>
-                <?php if ($a['label'] !== ''): ?><span class="badge bg-light text-dark ms-2"><?= e((string) $a['label']) ?></span><?php endif; ?>
+                <strong class="addr-name"><?= e((string) $a['recipient_name']) ?></strong>
+                <?php if ($a['label'] !== ''): ?><span class="address-pill address-pill--label ms-2"><?= e((string) $a['label']) ?></span><?php endif; ?>
               </div>
               <?php if ((int) $a['is_default'] === 1): ?>
-                <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-check-circle me-1" aria-hidden="true"></i>Default</span>
+                <span class="address-pill address-pill--default"><i class="bi bi-check-circle me-1" aria-hidden="true"></i>Default</span>
               <?php endif; ?>
             </div>
-            <p class="small text-muted-nova mb-1"><?= e((string) $a['city']) ?> &mdash; <?= e((string) $a['address']) ?><?= $a['apartment'] !== '' ? ', ' . e((string) $a['apartment']) : '' ?></p>
+            <p class="addr-lines small text-muted-nova mb-1"><?= e((string) $a['city']) ?> &mdash; <?= e((string) $a['address']) ?><?= $a['apartment'] !== '' ? ', ' . e((string) $a['apartment']) : '' ?></p>
             <p class="small text-muted-nova mb-3"><i class="bi bi-telephone me-1" aria-hidden="true"></i><?= e((string) $a['phone']) ?></p>
-            <div class="d-flex flex-wrap gap-2 pt-2 border-top">
+            <div class="addr-actions">
               <button class="btn btn-ghost btn-sm" type="button" data-addr-edit="<?= e((string) $a['id']) ?>" data-rn="<?= e((string) $a['recipient_name']) ?>" data-ph="<?= e((string) $a['phone']) ?>" data-city="<?= e((string) $a['city']) ?>" data-lb="<?= e((string) $a['label']) ?>" data-st="<?= e((string) $a['address']) ?>" data-apt="<?= e((string) $a['apartment']) ?>" data-def="<?= e((string) $a['is_default']) ?>"><i class="bi bi-pencil me-1" aria-hidden="true"></i>Edit</button>
               <?php if ((int) $a['is_default'] !== 1): ?>
                 <button class="btn btn-ghost btn-sm" type="button" data-addr-default="<?= e((string) $a['id']) ?>"><i class="bi bi-star me-1" aria-hidden="true"></i>Make default</button>
@@ -169,7 +169,8 @@ try {
       document.getElementById('a-street').value = edit.dataset.st || '';
       document.getElementById('a-apt').value = edit.dataset.apt || '';
       document.getElementById('a-default').checked = edit.dataset.def === '1';
-      form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      form.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest' });
       return;
     }
     if (del) {

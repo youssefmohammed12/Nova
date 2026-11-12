@@ -24,7 +24,7 @@
 <main id="main"><div class="container pb-5">
   <div class="page-head"><nav aria-label="Breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="index.html">Home</a></li><li class="breadcrumb-item active" aria-current="page" id="ok-bc">Order confirmed</li></ol></nav></div>
   <div class="row justify-content-center"><div class="col-lg-8">
-    <div class="success-hero" id="ok-hero" data-reveal>
+    <div class="success-hero" id="ok-hero" data-reveal role="status" aria-live="polite" aria-atomic="true">
       <span class="success-check" id="ok-icon" aria-hidden="true"><i class="bi bi-check-lg" id="ok-icon-i"></i></span>
       <p class="text-muted-nova mb-1" id="ok-subtitle">Thank you — cash on delivery</p>
       <h1 class="h2" id="ok-title">Your order is confirmed</h1>
@@ -32,7 +32,7 @@
       <p class="text-muted-nova small mb-0" id="ok-meta"></p>
     </div>
     <div class="summary mt-4"><h2 class="h5 mb-3">Order summary</h2>
-      <div id="ok-summary"><p class="text-muted-nova mb-0">Your items will appear here after checkout.</p></div>
+      <div id="ok-summary" aria-live="polite" aria-busy="true"><p class="text-muted-nova mb-0">Loading your order details…</p></div>
       <div class="summary__row mt-2"><span>Subtotal</span><span id="ok-sub">—</span></div>
       <div class="summary__row"><span>Delivery</span><span id="ok-del">—</span></div>
       <div class="summary__row summary__total"><span>Total due on delivery</span><span id="ok-total">—</span></div>
@@ -42,7 +42,7 @@
       <li><i class="bi bi-telephone" aria-hidden="true"></i>We will call you shortly to confirm delivery.</li>
       <li><i class="bi bi-info-circle" aria-hidden="true"></i>Return terms are illustrative in this demo.</li>
     </ul>
-    <div class="d-flex flex-wrap gap-2 mt-4">
+    <div class="d-flex flex-wrap gap-2 mt-4 success-actions">
       <a class="btn btn-nova" href="shop.html">Continue shopping</a>
       <a class="btn btn-ghost" href="index.html">Return home</a>
       <a class="btn btn-ghost" href="account/orders.php">View your orders</a>

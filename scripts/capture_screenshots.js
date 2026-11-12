@@ -1,22 +1,18 @@
 #!/usr/bin/env node
 /**
- * NOVA Home — README screenshot capture (development tool).
+ * NOVA Home — compact README screenshot capture.
  *
- * Captures the documentation gallery in docs/screenshots/ directly from the
- * running local application. Requires the app served locally and the demo
- * customer seeded (`php scripts/seed_demo_customer.php`).
+ * Captures eight representative pages from the local application:
+ * homepage desktop/mobile, shop, product detail, cart, checkout,
+ * customer dashboard, and admin dashboard.
+ *
+ * Requires the local app to be running and its synthetic demo customer/admin
+ * shortcuts to be available. No forms are submitted and no database records
+ * are created or modified. Cart/checkout fixtures exist only in localStorage.
  *
  * Usage:
  *   node scripts/capture_screenshots.js
  *   NOVA_BASE_URL=http://localhost/my-copy/ node scripts/capture_screenshots.js
- *
- * Privacy rules encoded here:
- *   - Customer pages are captured while signed in as the dedicated DEMO
- *     customer (synthetic fixture data only).
- *   - Admin order list is filtered server-side (?q=) to the demo customer.
- *   - Admin dashboard "Recent Orders" names are blurred in-page before
- *     capture unless they belong to the demo customer.
- *   - No orders are created and no records are modified.
  */
 
 'use strict';
@@ -25,240 +21,268 @@ const path = require('path');
 const fs = require('fs');
 const { chromium } = require('playwright');
 
-const BASE = process.env.NOVA_BASE_URL || 'http://localhost/nova-home/nova-home/';
-const OUT = path.join(__dirname, '..', 'docs', 'screenshots');
+const BASE = (process.env.NOVA_BASE_URL || 'http://localhost/nova-home/nova-home/').replace(/\/?$/, '/');
+const ROOT = path.join(__dirname, '..');
+const OUT = path.join(ROOT, 'docs', 'screenshots');
+const TEMP = path.join(OUT, '.refresh');
 const DESKTOP = { width: 1440, height: 900 };
 const MOBILE = { width: 390, height: 844 };
 
 const DEMO_NAME = 'Sarah El-Masry';
-const DEMO_ORDER_REF = 'NH-20260915-87A4E0'; // demo order: delivered, synthetic data
+
+const KEEP = [
+  'homepage-desktop.png',
+  'homepage-mobile.png',
+  'shop-desktop.png',
+  'product-detail.png',
+  'cart.png',
+  'checkout.png',
+  'customer-dashboard.png',
+  'admin-dashboard.png',
+];
+
+const REMOVE_AFTER_SUCCESS = [
+  'admin-categories.png',
+  'admin-login.png',
+  'admin-order-detail.png',
+  'admin-orders.png',
+  'admin-product-form.png',
+  'admin-products.png',
+  'admin-settings.png',
+  'customer-addresses.png',
+  'customer-login.png',
+  'customer-orders.png',
+  'customer-profile.png',
+  'customer-wishlist.png',
+  'quick-view.png',
+  'shop-filtered.png',
+  'shop-mobile.png',
+];
 
 const errors = [];
+const warnings = [];
 const captured = [];
 
-function log(msg) {
-  process.stdout.write(`[shots] ${msg}\n`);
+function log(message) {
+  process.stdout.write('[shots] ' + message + '\n');
 }
 
-function attachErrorWatch(page, label) {
-  page.on('pageerror', (e) => errors.push(`${label}: pageerror: ${e.message}`));
-  page.on('console', (m) => {
-    if (m.type() === 'error') errors.push(`${label}: console.error: ${m.text()}`);
+function watchPage(page, label) {
+  page.on('pageerror', (error) => errors.push(label + ': ' + error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') warnings.push(label + ': ' + message.text());
   });
 }
 
-/** Wait for load + fonts + images, then freeze reveal animations for capture. */
 async function settle(page) {
   await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {});
   await page.evaluate(async () => {
-    if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (e) {} }
-    const imgs = Array.from(document.images);
-    await Promise.all(imgs.map((img) => img.complete
-      ? Promise.resolve()
-      : new Promise((res) => { img.addEventListener('load', res, { once: true }); img.addEventListener('error', res, { once: true }); setTimeout(res, 4000); })));
+    if (document.fonts && document.fonts.ready) {
+      try { await document.fonts.ready; } catch (_) {}
+    }
+    await Promise.all(Array.from(document.images).map((image) => {
+      if (image.complete) return Promise.resolve();
+      return new Promise((resolve) => {
+        image.addEventListener('load', resolve, { once: true });
+        image.addEventListener('error', resolve, { once: true });
+        setTimeout(resolve, 4000);
+      });
+    }));
   }).catch(() => {});
   await page.addStyleTag({
     content: '[data-reveal]{opacity:1!important;transform:none!important;transition:none!important}',
   }).catch(() => {});
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(350);
 }
 
-async function shot(page, name, opts = {}) {
+async function capture(page, name) {
   await settle(page);
-  if (opts.mask) await opts.mask(page);
-  // Report broken images (visible <img> with no decoded pixels).
+
   const broken = await page.evaluate(() => Array.from(document.images)
-    .filter((i) => i.offsetParent !== null && i.complete && i.naturalWidth === 0 && !String(i.src).startsWith('data:'))
-    .map((i) => i.src)).catch(() => []);
-  if (broken.length) log(`WARNING ${name}: broken images: ${broken.slice(0, 3).join(', ')}`);
-  const file = path.join(OUT, name);
-  await page.screenshot({ path: file, caret: 'hide', animations: 'disabled', ...(opts.screenshot || {}) });
+    .filter((image) => image.offsetParent !== null
+      && image.complete
+      && image.naturalWidth === 0
+      && !String(image.src).startsWith('data:'))
+    .map((image) => image.src)).catch(() => []);
+
+  if (broken.length) warnings.push(name + ': broken visible images: ' + broken.slice(0, 5).join(', '));
+
+  const file = path.join(TEMP, name);
+  await page.screenshot({ path: file, caret: 'hide', animations: 'disabled' });
   const size = fs.statSync(file).size;
   captured.push({ name, size });
-  log(`${name} (${(size / 1024).toFixed(0)} KB)`);
+  log(name + ' (' + (size / 1024).toFixed(0) + ' KB)');
 }
 
 async function maskRecentOrderNames(page) {
   await page.evaluate((demoName) => {
-    document.querySelectorAll('.admin-table tbody tr').forEach((tr) => {
-      const cell = tr.querySelector('td:nth-child(2) .fw-medium');
-      if (cell && cell.textContent.trim() !== demoName) {
-        cell.style.filter = 'blur(7px)';
-        cell.style.userSelect = 'none';
+    document.querySelectorAll('.admin-table tbody tr').forEach((row) => {
+      const customer = row.querySelector('td:nth-child(2) .fw-medium');
+      if (customer && customer.textContent.trim() !== demoName) {
+        customer.style.filter = 'blur(7px)';
+        customer.style.userSelect = 'none';
       }
     });
   }, DEMO_NAME);
 }
 
+function validatePng(file, expectedWidth, expectedHeight) {
+  const data = fs.readFileSync(file);
+  if (data.length < 24 || data.toString('hex', 0, 8) !== '89504e470d0a1a0a') {
+    throw new Error(path.basename(file) + ' is not a valid PNG.');
+  }
+  const width = data.readUInt32BE(16);
+  const height = data.readUInt32BE(20);
+  if (width !== expectedWidth || height !== expectedHeight) {
+    throw new Error(path.basename(file) + ' has ' + width + 'x' + height
+      + '; expected ' + expectedWidth + 'x' + expectedHeight + '.');
+  }
+  if (data.length < 15000) {
+    throw new Error(path.basename(file) + ' is unexpectedly small (' + data.length + ' bytes).');
+  }
+}
+
 async function main() {
   fs.mkdirSync(OUT, { recursive: true });
+  fs.rmSync(TEMP, { recursive: true, force: true });
+  fs.mkdirSync(TEMP, { recursive: true });
+
   const browser = await chromium.launch();
   try {
-    // ── 1. Public storefront (desktop) ───────────────────────────────────
+    // Public storefront: desktop, shop, product detail.
     const desktop = await browser.newContext({ viewport: DESKTOP, deviceScaleFactor: 1 });
     const page = await desktop.newPage();
-    attachErrorWatch(page, 'storefront');
+    watchPage(page, 'storefront');
 
     await page.goto(BASE, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('.product-card', { timeout: 15000 });
-    await shot(page, 'homepage-desktop.png');
+    await capture(page, 'homepage-desktop.png');
 
     await page.goto(BASE + 'shop.html', { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#shop-grid .product-card', { timeout: 15000 });
-    await shot(page, 'shop-desktop.png');
-
-    // Meaningful active filter: category pill "Lighting" (+ its active-filter chip)
-    const pill = page.locator('#cat-pills button', { hasText: 'Lighting' }).first();
-    await pill.waitFor({ timeout: 8000 });
-    await pill.click();
-    await page.waitForSelector('#active-filters:not([hidden])', { timeout: 8000 });
-    await page.waitForTimeout(500);
-    await shot(page, 'shop-filtered.png');
+    await capture(page, 'shop-desktop.png');
 
     await page.goto(BASE + 'product.html?id=sahara-vase', { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#gallery-main', { timeout: 15000 });
-    await shot(page, 'product-detail.png');
+    await capture(page, 'product-detail.png');
 
-    await page.goto(BASE + 'shop.html', { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('#shop-grid .product-card__media > a[data-quick]', { timeout: 15000 });
-    await page.locator('#shop-grid .product-card__media > a[data-quick]').first().click();
-    await page.waitForSelector('#quickModal.show', { timeout: 8000 });
-    await page.waitForTimeout(900); // modal fade + image
-    await shot(page, 'quick-view.png');
-    await page.keyboard.press('Escape').catch(() => {});
-
-    // Cart — synthetic local fixture, two modest items (progress bar visible)
+    // Cart: synthetic cart fixture held only in this browser.
     const cartPage = await desktop.newPage();
-    attachErrorWatch(cartPage, 'cart');
+    watchPage(cartPage, 'cart');
     await cartPage.addInitScript(() => {
-      try { localStorage.setItem('nova_cart', JSON.stringify([{ id: 'sahara-vase', qty: 1 }, { id: 'terra-mug-set', qty: 1 }])); } catch (e) {}
+      localStorage.setItem('nova_cart', JSON.stringify([
+        { id: 'sahara-vase', qty: 1 },
+        { id: 'terra-mug-set', qty: 1 },
+      ]));
     });
     await cartPage.goto(BASE + 'cart.html', { waitUntil: 'domcontentloaded' });
     await cartPage.waitForSelector('#cart-filled:not([hidden])', { timeout: 15000 });
-    await cartPage.waitForTimeout(600);
-    await shot(cartPage, 'cart.png');
-    await cartPage.close();
+    await capture(cartPage, 'cart.png');
+    await desktop.close();
 
-    // Checkout — form filled with the synthetic demo identity; NOT submitted.
-    const coPage = await desktop.newPage();
-    attachErrorWatch(coPage, 'checkout');
-    await coPage.addInitScript(() => {
-      try { localStorage.setItem('nova_cart', JSON.stringify([{ id: 'sahara-vase', qty: 1 }, { id: 'terra-mug-set', qty: 1 }])); } catch (e) {}
+    // One mobile representative: homepage at 390 x 844.
+    const mobile = await browser.newContext({
+      viewport: MOBILE,
+      deviceScaleFactor: 1,
+      isMobile: true,
+      hasTouch: true,
     });
-    await coPage.goto(BASE + 'checkout.html', { waitUntil: 'domcontentloaded' });
-    await coPage.waitForSelector('#c-name', { timeout: 15000 });
-    await coPage.fill('#c-name', DEMO_NAME);
-    await coPage.fill('#c-phone', '+20 112 345 6789');
-    await coPage.fill('#c-email', 'demo.customer@novahome.eg');
-    await coPage.fill('#c-address', '14 Hassan Sabry Street, Zamalek');
-    await coPage.fill('#c-apt', 'Apt 7B, 3rd Floor');
-    await coPage.$eval('#c-city', (el) => {
-      const opt = Array.from(el.options).find((o) => (o.value || '').toLowerCase() === 'cairo') || el.options[1];
-      el.value = opt.value;
-      el.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-    await shot(coPage, 'checkout.png');
-    await coPage.close();
-
-    // ── 2. Storefront (mobile representative) ────────────────────────────
-    const mobile = await browser.newContext({ viewport: MOBILE, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
-    const mpage = await mobile.newPage();
-    attachErrorWatch(mpage, 'mobile');
-    await mpage.goto(BASE, { waitUntil: 'domcontentloaded' });
-    await mpage.waitForSelector('.product-card', { timeout: 15000 });
-    await shot(mpage, 'homepage-mobile.png');
-    await mpage.goto(BASE + 'shop.html', { waitUntil: 'domcontentloaded' });
-    await mpage.waitForSelector('#shop-grid .product-card', { timeout: 15000 });
-    await shot(mpage, 'shop-mobile.png');
+    const mobilePage = await mobile.newPage();
+    watchPage(mobilePage, 'mobile');
+    await mobilePage.goto(BASE, { waitUntil: 'domcontentloaded' });
+    await mobilePage.waitForSelector('.product-card', { timeout: 15000 });
+    await capture(mobilePage, 'homepage-mobile.png');
     await mobile.close();
 
-    // ── 3. Customer account (signed in as the dedicated demo customer) ───
-    const cust = await browser.newContext({ viewport: DESKTOP, deviceScaleFactor: 1 });
-    const cpage = await cust.newPage();
-    attachErrorWatch(cpage, 'customer');
+    // Customer portal: only the dedicated synthetic local demo customer.
+    const customer = await browser.newContext({ viewport: DESKTOP, deviceScaleFactor: 1 });
+    const customerPage = await customer.newPage();
+    watchPage(customerPage, 'customer');
+    await customerPage.addInitScript(() => {
+      localStorage.setItem('nova_cart', JSON.stringify([
+        { id: 'sahara-vase', qty: 1 },
+        { id: 'terra-mug-set', qty: 1 },
+      ]));
+    });
 
-    await cpage.goto(BASE + 'account/login.php', { waitUntil: 'domcontentloaded' });
-    await cpage.waitForSelector('#demo-cust-btn', { timeout: 15000 });
-    await shot(cpage, 'customer-login.png');
+    await customerPage.goto(BASE + 'account/login.php', { waitUntil: 'domcontentloaded' });
+    await customerPage.waitForSelector('#demo-cust-btn', { timeout: 15000 });
+    await customerPage.click('#demo-cust-btn');
+    await customerPage.waitForURL('**/account/index.php', { timeout: 15000 });
+    await customerPage.waitForSelector('.account-metrics', { timeout: 15000 });
+    await capture(customerPage, 'customer-dashboard.png');
 
-    await cpage.click('#demo-cust-btn');
-    await cpage.waitForURL('**/account/index.php', { timeout: 15000 });
-    await cpage.waitForSelector('.account-metrics', { timeout: 15000 });
-    await shot(cpage, 'customer-dashboard.png');
+    // Checkout requires authentication; use the local synthetic demo session.
+    await customerPage.goto(BASE + 'checkout.html', { waitUntil: 'domcontentloaded' });
+    await customerPage.waitForSelector('#c-name', { timeout: 15000 });
+    await customerPage.fill('#c-name', DEMO_NAME);
+    await customerPage.fill('#c-phone', '+20 112 345 6789');
+    await customerPage.fill('#c-email', 'demo.customer@novahome.eg');
+    await customerPage.fill('#c-address', '14 Hassan Sabry Street, Zamalek');
+    await customerPage.fill('#c-apt', 'Apt 7B, 3rd Floor');
+    await customerPage.$eval('#c-city', (element) => {
+      const option = Array.from(element.options)
+        .find((item) => (item.value || '').toLowerCase() === 'cairo') || element.options[1];
+      element.value = option.value;
+      element.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    await capture(customerPage, 'checkout.png');
+    await customer.close();
 
-    await cpage.goto(BASE + 'account/orders.php', { waitUntil: 'domcontentloaded' });
-    await cpage.waitForSelector('table tbody tr, .order-mobile-card', { timeout: 15000 });
-    await shot(cpage, 'customer-orders.png');
+    // Admin portal: dashboard only; blur any non-demo customer names.
+    const admin = await browser.newContext({ viewport: DESKTOP, deviceScaleFactor: 1 });
+    const adminPage = await admin.newPage();
+    watchPage(adminPage, 'admin');
 
-    await cpage.goto(BASE + 'account/wishlist.html', { waitUntil: 'domcontentloaded' });
-    await cpage.waitForSelector('#account-wish-grid .product-card', { timeout: 15000 });
-    await shot(cpage, 'customer-wishlist.png');
-
-    await cpage.goto(BASE + 'account/addresses.php', { waitUntil: 'domcontentloaded' });
-    await cpage.waitForSelector('[data-addr-edit], #addr-empty', { timeout: 15000 });
-    await shot(cpage, 'customer-addresses.png');
-
-    await cpage.goto(BASE + 'account/profile.php', { waitUntil: 'domcontentloaded' });
-    await cpage.waitForSelector('#p-email', { timeout: 15000 });
-    await shot(cpage, 'customer-profile.png');
-    await cust.close();
-
-    // ── 4. Admin portal (signed in via the development demo shortcut) ────
-    const adm = await browser.newContext({ viewport: DESKTOP, deviceScaleFactor: 1 });
-    const apage = await adm.newPage();
-    attachErrorWatch(apage, 'admin');
-
-    await apage.goto(BASE + 'admin/login.php', { waitUntil: 'domcontentloaded' });
-    await apage.waitForSelector('#demo-admin-btn', { timeout: 15000 });
-    await shot(apage, 'admin-login.png');
-
-    await apage.click('#demo-admin-btn');
-    await apage.waitForURL('**/admin/index.php', { timeout: 15000 });
-    await apage.waitForSelector('.admin-metrics', { timeout: 15000 });
-    await shot(apage, 'admin-dashboard.png', { mask: maskRecentOrderNames });
-
-    await apage.goto(BASE + 'admin/products.php', { waitUntil: 'domcontentloaded' });
-    await apage.waitForSelector('table tbody tr', { timeout: 15000 });
-    await shot(apage, 'admin-products.png');
-
-    await apage.goto(BASE + 'admin/product-form.php?id=sahara-vase', { waitUntil: 'domcontentloaded' });
-    await apage.waitForSelector('input[name="name"]', { timeout: 15000 });
-    await shot(apage, 'admin-product-form.png');
-
-    await apage.goto(BASE + 'admin/categories.php', { waitUntil: 'domcontentloaded' });
-    await apage.waitForSelector('table tbody tr', { timeout: 15000 });
-    await shot(apage, 'admin-categories.png');
-
-    // Order list filtered server-side to the demo customer's synthetic orders.
-    await apage.goto(BASE + 'admin/orders.php?q=' + encodeURIComponent(DEMO_NAME), { waitUntil: 'domcontentloaded' });
-    await apage.waitForSelector('table tbody tr', { timeout: 15000 });
-    await shot(apage, 'admin-orders.png');
-
-    await apage.goto(BASE + 'admin/order.php?ref=' + DEMO_ORDER_REF, { waitUntil: 'domcontentloaded' });
-    await apage.waitForSelector('.admin-card', { timeout: 15000 });
-    await shot(apage, 'admin-order-detail.png');
-
-    await apage.goto(BASE + 'admin/settings.php', { waitUntil: 'domcontentloaded' });
-    await apage.waitForSelector('#s-name', { timeout: 15000 });
-    await shot(apage, 'admin-settings.png');
-    await adm.close();
-
-    await desktop.close();
+    await adminPage.goto(BASE + 'admin/login.php', { waitUntil: 'domcontentloaded' });
+    await adminPage.waitForSelector('#demo-admin-btn', { timeout: 15000 });
+    await adminPage.click('#demo-admin-btn');
+    await adminPage.waitForURL('**/admin/index.php', { timeout: 15000 });
+    await adminPage.waitForSelector('.admin-metrics', { timeout: 15000 });
+    await capture(adminPage, 'admin-dashboard.png');
+    await admin.close();
   } finally {
     await browser.close();
   }
 
-  log(`captured ${captured.length} screenshots -> ${OUT}`);
+  if (captured.length !== KEEP.length) {
+    throw new Error('Captured ' + captured.length + ' images; expected ' + KEEP.length + '.');
+  }
+
   if (errors.length) {
-    log(`PAGE ERRORS (${errors.length}):`);
-    errors.slice(0, 20).forEach((e) => log('  ' + e));
+    errors.forEach((error) => log('PAGE ERROR: ' + error));
+    throw new Error(errors.length + ' browser page error(s) detected; existing gallery was not replaced.');
+  }
+
+  for (const name of KEEP) {
+    const dimensions = name === 'homepage-mobile.png' ? MOBILE : DESKTOP;
+    validatePng(path.join(TEMP, name), dimensions.width, dimensions.height);
+  }
+
+  // Replace the curated gallery only after every new image passes validation.
+  for (const name of KEEP) {
+    fs.copyFileSync(path.join(TEMP, name), path.join(OUT, name));
+  }
+  for (const name of REMOVE_AFTER_SUCCESS) {
+    fs.rmSync(path.join(OUT, name), { force: true });
+  }
+  fs.rmSync(TEMP, { recursive: true, force: true });
+
+  const totalBytes = KEEP.reduce((sum, name) => sum + fs.statSync(path.join(OUT, name)).size, 0);
+  log('gallery updated: ' + KEEP.length + ' screenshots, '
+    + REMOVE_AFTER_SUCCESS.length + ' obsolete files removed.');
+  log('total gallery size: ' + (totalBytes / 1024).toFixed(0) + ' KB.');
+
+  if (warnings.length) {
+    warnings.forEach((warning) => log('WARNING: ' + warning));
+    log(warnings.length + ' console/image warning(s) recorded; review before release.');
     process.exitCode = 1;
   } else {
-    log('no console/page errors detected');
+    log('no console or broken-image warnings detected.');
   }
 }
 
-main().catch((e) => {
-  log('FAILED: ' + (e && e.stack ? e.stack : e));
+main().catch((error) => {
+  log('FAILED: ' + (error && error.stack ? error.stack : error));
   process.exitCode = 1;
 });

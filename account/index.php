@@ -176,11 +176,19 @@ try {
 <script src="../js/main.js"></script>
 <script>
 (function() {
-  try {
-    var wish = JSON.parse(localStorage.getItem('nova_wish') || '[]');
-    var el = document.getElementById('dashWishCount');
-    if (el) el.textContent = Array.isArray(wish) ? wish.length : 0;
-  } catch(e) {}
+  var el = document.getElementById('dashWishCount');
+  if (!el) return;
+  function updateWishCount() {
+    if (!window.NOVA || !NOVA.catalog || !NOVA.catalog.ready || !NOVA.wish) {
+      el.textContent = '—';
+      return;
+    }
+    el.textContent = NOVA.wish.ids().length;
+  }
+  document.addEventListener('catalog:ready', updateWishCount);
+  document.addEventListener('catalog:error', function() { el.textContent = '—'; });
+  document.addEventListener('wishlist:change', updateWishCount);
+  updateWishCount();
 })();
 </script>
 </body>

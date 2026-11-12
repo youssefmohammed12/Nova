@@ -69,7 +69,17 @@ $badge = static function (string $s): string {
 <a class="skip-link" href="#main">Skip to content</a>
 <div id="site-header"></div>
 <main id="main"><div class="container pb-5">
-  <div class="page-head account-head"><nav aria-label="Breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../index.html">Home</a></li><li class="breadcrumb-item"><a href="index.php">My account</a></li><li class="breadcrumb-item"><a href="orders.php">Orders</a></li><li class="breadcrumb-item active" aria-current="page"><?= e($order ? (string) $order['order_ref'] : 'Order') ?></li></ol></nav><?php if ($order): ?><p class="eyebrow">My shopping space</p><h1>Order <span><?= e((string) $order['order_ref']) ?></span></h1><p class="mb-0"><?= $badge((string) $order['status']) ?> <span class="text-muted-nova small">Placed <?= e(date('d M Y', strtotime((string) $order['created_at']))) ?> · <?= e(strtoupper((string) $order['payment_method'])) ?></span></p><?php endif; ?></div>
+  <div class="page-head account-head">
+    <nav aria-label="Breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../index.html">Home</a></li><li class="breadcrumb-item"><a href="index.php">My account</a></li><li class="breadcrumb-item"><a href="orders.php">Orders</a></li><li class="breadcrumb-item active" aria-current="page"><?= e($order ? (string) $order['order_ref'] : 'Order') ?></li></ol></nav>
+    <p class="eyebrow">My shopping space</p>
+    <?php if ($order): ?>
+      <h1>Order <span><?= e((string) $order['order_ref']) ?></span></h1>
+      <p class="mb-0"><?= $badge((string) $order['status']) ?> <span class="text-muted-nova small">Placed <?= e(date('d M Y', strtotime((string) $order['created_at']))) ?> · <?= e(strtoupper((string) $order['payment_method'])) ?></span></p>
+    <?php else: ?>
+      <h1>Order details</h1>
+      <p class="text-muted-nova mb-0">We could not load the requested order details.</p>
+    <?php endif; ?>
+  </div>
 <?php if (!$order): ?>
   <div class="account-layout">
     <?php require __DIR__ . '/../includes/account-side.php'; ?>
@@ -77,7 +87,7 @@ $badge = static function (string $s): string {
   </div>
 <?php else: ?>
   <div class="row g-4 align-items-start">
-    <div class="col-lg-8"><div class="table-card"><table class="table align-middle m-0">
+    <div class="col-lg-8"><div class="table-card table-card--order-detail"><table class="table align-middle m-0">
       <thead><tr><th scope="col">Product</th><th scope="col">Unit price</th><th scope="col">Qty</th><th scope="col" class="text-end">Line total</th></tr></thead>
       <tbody>
 <?php
@@ -105,6 +115,18 @@ $resolveItemImage = static function (?string $rawPath): string {
 <?php endforeach; ?>
       </tbody>
     </table></div>
+      <section class="order-detail-mobile-list" aria-label="Ordered products">
+<?php foreach ($items as $it): ?>
+        <article class="order-detail-mobile-card">
+          <h2><?= e((string) $it['product_name']) ?></h2>
+          <dl class="order-detail-mobile-meta">
+            <div><dt>Quantity</dt><dd><?= e((string) $it['quantity']) ?></dd></div>
+            <div><dt>Unit price</dt><dd><?= e(nova_money((int) $it['unit_price'])) ?></dd></div>
+          </dl>
+          <div class="order-detail-mobile-total"><span>Line total</span><strong><?= e(nova_money((int) $it['line_total'])) ?></strong></div>
+        </article>
+<?php endforeach; ?>
+      </section>
       <div class="addr-card mt-3"><h2 class="h6">Shipping to</h2><p class="addr-name"><?= e((string) $order['customer_name']) ?></p><p class="addr-lines"><?= e((string) $order['address']) ?>, <?= e((string) $order['city']) ?><br><span class="text-muted-nova small">Historical delivery details recorded at checkout.</span></p></div>
     </div>
     <div class="col-lg-4"><div class="summary"><h2 class="h5 mb-3">Totals</h2>

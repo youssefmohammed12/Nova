@@ -37,6 +37,6 @@ if ($initials === '') {
     <a href="addresses.php"<?= $acCur('addresses') ?>><i class="bi bi-geo-alt" aria-hidden="true"></i><span>Addresses</span></a>
     <a href="profile.php"<?= $acCur('profile') ?>><i class="bi bi-person" aria-hidden="true"></i><span>Profile</span></a>
     <a href="../shop.html"><i class="bi bi-shop" aria-hidden="true"></i><span>Continue shopping</span></a>
-    <a href="logout.php" class="cust-logout-btn text-danger"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Sign out</span></a>
+    <a href="logout.php" class="cust-logout-btn account-side-logout"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Sign out</span></a>
   </nav>
 </aside>

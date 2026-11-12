@@ -122,7 +122,7 @@ require __DIR__ . '/../includes/admin-head.php';
 <form class="admin-filter-bar mb-4" method="get" action="products.php">
   <div class="input-group" style="min-width: 220px; flex: 1 1 220px;">
     <span class="input-group-text bg-white border-end-0 text-muted-nova"><i class="bi bi-search"></i></span>
-    <input class="form-control border-start-0 ps-0" id="ap-q" name="q" type="search" placeholder="Search product name or slug…" value="<?= e($q) ?>">
+    <input class="form-control border-start-0 ps-0" id="ap-q" name="q" type="search" aria-label="Search products by name or URL slug" placeholder="Search product name or slug…" value="<?= e($q) ?>">
   </div>
 
   <div style="min-width: 170px; flex: 0 1 180px;">
@@ -158,8 +158,8 @@ require __DIR__ . '/../includes/admin-head.php';
   </div>
 </form>
 
-<!-- Products Table Wrap -->
-<div class="admin-table-wrap">
+<!-- Desktop Products Table -->
+<div class="admin-table-wrap d-none d-xxl-block">
   <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
     <span class="small text-muted-nova">Showing <strong><?= count($products) ?></strong> product<?= count($products) === 1 ? '' : 's' ?></span>
     <span class="small text-muted-nova">Click <em>Deactivate</em> to hide from shop without breaking order records</span>
@@ -255,6 +255,81 @@ require __DIR__ . '/../includes/admin-head.php';
       </tbody>
     </table>
   </div>
+</div>
+
+<!-- Mobile Product Cards -->
+<div class="admin-products-mobile d-xxl-none d-grid gap-3">
+<?php foreach ($products as $p): ?>
+  <?php
+    $pImg = (string) ($p['image_path'] ?? '');
+    $pSrc = $pImg !== '' ? '../' . ltrim($pImg, '/') : '../assets/images/hero.svg';
+  ?>
+  <article class="admin-card admin-product-mobile-card">
+    <div class="admin-product-mobile-card__top">
+      <img class="admin-product-mobile-thumb" src="<?= e($pSrc) ?>" width="56" height="56" alt="" loading="lazy">
+      <div class="admin-product-mobile-card__details">
+        <h2 class="h6 mb-1 fw-semibold">
+          <a class="admin-product-mobile-card__name text-dark text-decoration-none" href="product-form.php?id=<?= e((string) $p['slug']) ?>">
+            <?= e((string) $p['name']) ?>
+          </a>
+        </h2>
+        <div class="small text-muted-nova font-monospace mb-2"><?= e((string) $p['slug']) ?></div>
+        <span class="badge bg-light text-dark border"><?= e((string) $p['cat_name']) ?></span>
+      </div>
+    </div>
+
+    <div class="admin-product-mobile-card__meta py-2 my-2 border-top border-bottom">
+      <div>
+        <span class="d-block small text-muted-nova">Price</span>
+        <strong><?= e(nova_money((int) $p['price'])) ?></strong>
+        <?php if ($p['old_price'] !== null): ?>
+        <span class="d-block small text-muted-nova text-decoration-line-through"><?= e(nova_money((int) $p['old_price'])) ?></span>
+        <?php endif; ?>
+      </div>
+      <div class="text-end">
+        <span class="d-block small text-muted-nova">Catalog rating</span>
+        <span class="fw-medium"><i class="bi bi-star-fill text-warning me-1" aria-hidden="true"></i><?= e((string) $p['rating']) ?></span>
+        <span class="small text-muted-nova">(<?= e((string) $p['reviews_count']) ?>)</span>
+      </div>
+    </div>
+
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+      <div class="d-flex flex-wrap gap-1">
+        <?php if ((int) $p['is_new'] === 1): ?><span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">New</span><?php endif; ?>
+        <?php if ((int) $p['is_best'] === 1): ?><span class="badge bg-success-subtle text-success-emphasis border border-success-subtle">Best</span><?php endif; ?>
+        <?php if ((int) $p['is_new'] === 0 && (int) $p['is_best'] === 0): ?><span class="small text-muted-nova">No promotional badges</span><?php endif; ?>
+      </div>
+      <?php if ((int) $p['active'] === 1): ?>
+        <span class="status status--active"><i class="bi bi-check-circle me-1" aria-hidden="true"></i>Active</span>
+      <?php else: ?>
+        <span class="status status--inactive"><i class="bi bi-eye-slash me-1" aria-hidden="true"></i>Inactive</span>
+      <?php endif; ?>
+    </div>
+
+    <div class="admin-product-mobile-card__actions">
+      <a class="btn btn-ghost btn-sm" href="product-form.php?id=<?= e((string) $p['slug']) ?>">
+        <i class="bi bi-pencil me-1" aria-hidden="true"></i>Edit
+      </a>
+      <form method="post" action="products.php" class="m-0">
+        <input type="hidden" name="csrf_token" value="<?= e(nova_csrf_token()) ?>">
+        <input type="hidden" name="action" value="toggle">
+        <input type="hidden" name="id" value="<?= e((string) $p['id']) ?>">
+        <?php if ((int) $p['active'] === 1): ?>
+          <button class="btn btn-outline-secondary btn-sm" type="submit">Deactivate</button>
+        <?php else: ?>
+          <button class="btn btn-outline-success btn-sm" type="submit">Activate</button>
+        <?php endif; ?>
+      </form>
+    </div>
+  </article>
+<?php endforeach; ?>
+<?php if (!$products): ?>
+  <div class="admin-card text-center py-5 text-muted-nova">
+    <i class="bi bi-search fs-3 d-block mb-2" aria-hidden="true"></i>
+    <p class="mb-2">No products found matching the selected filters.</p>
+    <a class="btn btn-ghost btn-sm" href="products.php">Clear Filters</a>
+  </div>
+<?php endif; ?>
 </div>
 
 <?php require __DIR__ . '/../includes/admin-foot.php'; ?>

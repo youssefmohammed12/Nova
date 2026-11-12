@@ -150,20 +150,38 @@
     }
   }
 
-  /* Account static preview: render the real local wishlist with store card language. */
+  /* Account preview: wait for the catalogue before deciding that a saved list is empty. */
   function accountPreview() {
     const wishCount = document.querySelector('[data-demo-wish-count]');
-    if (wishCount) wishCount.textContent = NOVA.wish.ids().length;
     const grid = $('#account-wish-grid');
-    if (grid) {
-      const renderGrid = () => {
-        const ids = NOVA.wish.ids();
-        const list = ids.map(id => NOVA.find(id)).filter(Boolean);
-        grid.innerHTML = list.length ? list.map(p => `<div class="col-6 col-lg-4">${ui.card(p, new Set(ids))}</div>`).join('')
-          : '<div class="col-12"><div class="empty-state"><i class="bi bi-heart" aria-hidden="true"></i><h2 class="h4">Your wishlist is empty</h2><p>Tap the heart on any product to keep it here.</p><a class="btn btn-nova" href="../shop.html">Continue shopping</a></div></div>';
-      };
-      renderGrid();
-      document.addEventListener('wishlist:change', renderGrid);
+    const renderWishlist = () => {
+      if (!NOVA.catalog || !NOVA.catalog.ready) {
+        if (wishCount) wishCount.textContent = '—';
+        if (grid) {
+          grid.innerHTML = NOVA.catalog && NOVA.catalog.error
+            ? '<div class="col-12"><div class="empty-state" role="status"><i class="bi bi-wifi-off" aria-hidden="true"></i><h2 class="h4">Saved pieces are unavailable</h2><p>We could not load the product catalogue. Please refresh and try again.</p><a class="btn btn-ghost" href="../shop.html">Browse the shop</a></div></div>'
+            : '<div class="col-12"><p class="text-muted-nova py-3" role="status">Loading your saved pieces…</p></div>';
+        }
+        return;
+      }
+
+      const ids = NOVA.wish.ids();
+      if (wishCount) wishCount.textContent = ids.length;
+      if (!grid) return;
+      const list = ids.map(id => NOVA.find(id)).filter(Boolean);
+      grid.innerHTML = list.length
+        ? list.map(p => '<div class="col-6 col-lg-4">' + ui.card(p, new Set(ids)) + '</div>').join('')
+        : '<div class="col-12"><div class="empty-state"><i class="bi bi-heart" aria-hidden="true"></i><h2 class="h4">Your wishlist is empty</h2><p>Tap the heart on any product to keep it here.</p><a class="btn btn-nova" href="../shop.html">Continue shopping</a></div></div>';
+      const shopViewLink = document.getElementById('wish-open-shop-view');
+      if (shopViewLink) shopViewLink.hidden = list.length === 0;
+    };
+
+    if ((wishCount || grid) && document.body.dataset.wishlistPreviewBound !== 'true') {
+      document.body.dataset.wishlistPreviewBound = 'true';
+      document.addEventListener('wishlist:change', renderWishlist);
+      document.addEventListener('catalog:ready', renderWishlist);
+      document.addEventListener('catalog:error', renderWishlist);
     }
+    renderWishlist();
   }
 })();

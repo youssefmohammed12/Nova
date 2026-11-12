@@ -57,11 +57,11 @@ $badge = static function (string $s): string {
     <?php require __DIR__ . '/../includes/account-side.php'; ?>
     <div class="account-main">
 <?php if (!$rows): ?>
-      <div class="account-card text-center py-5">
+      <div class="account-card text-center py-5" role="status" aria-labelledby="orders-empty-title">
         <div class="account-avatar mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.5rem;">
           <i class="bi bi-box-seam" aria-hidden="true"></i>
         </div>
-        <h2 class="h5 mb-2">No orders placed yet</h2>
+        <h2 class="h5 mb-2" id="orders-empty-title">No orders placed yet</h2>
         <p class="text-muted-nova small mb-3">When you purchase furniture and home decor while signed in, your order status and receipts will be tracked here.</p>
         <a class="btn btn-nova" href="../shop.html">Start shopping</a>
       </div>

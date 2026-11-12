@@ -213,7 +213,7 @@
     </div>
     <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchTitle" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content p-3">
       <form action="${B}shop.html" method="get" role="search"><label class="form-label fw-semibold" id="searchTitle" for="searchInput">Search products</label>
-      <div class="search-wrap"><input class="form-control" id="searchInput" name="q" type="search" placeholder="Lamps, vases, baskets" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="searchPanel" aria-autocomplete="list"><button class="btn btn-nova" type="submit">Search</button><div class="search-panel" id="searchPanel" role="listbox" aria-label="Search suggestions" hidden></div></div></form>
+      <div class="search-wrap"><input class="form-control" id="searchInput" name="q" type="search" placeholder="Lamps, vases, baskets" autocomplete="off" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="searchPanel" aria-autocomplete="list"><button class="btn btn-nova" type="submit">Search</button><div class="search-panel" id="searchPanel" role="listbox" aria-label="Search suggestions" hidden></div></div></form>
     </div></div></div>`;
   }
 
@@ -248,6 +248,15 @@
     </div></div>
     <div class="toast-container position-fixed bottom-0 end-0 p-3"><div id="toast" class="toast nova-toast" role="status" aria-live="polite" aria-atomic="true"><div class="d-flex"><div class="toast-body" id="toastBody"></div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div></div></div>`;
   }
+
+  document.addEventListener('click', function (event) {
+    const contactLink = event.target.closest('#navDrawer .drawer-nav a[href="#contact"]');
+    if (!contactLink) return;
+    const drawer = document.getElementById('navDrawer');
+    if (drawer && window.bootstrap && window.bootstrap.Offcanvas) {
+      window.bootstrap.Offcanvas.getOrCreateInstance(drawer).hide();
+    }
+  });
 
   function mount() {
     checkAuth();

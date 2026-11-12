@@ -59,25 +59,25 @@ $pageTitle = 'Admin Sign In | NOVA Home';
     <form id="admin-login-form" novalidate data-csrf="<?= e($csrfToken) ?>">
       <div class="mb-3">
         <label class="form-label fw-medium small" for="a-email">Admin Email</label>
-        <div class="input-group">
-          <span class="input-group-text bg-white text-muted-nova"><i class="bi bi-envelope"></i></span>
+        <div class="input-group has-validation">
+          <span class="input-group-text bg-white text-muted-nova"><i class="bi bi-envelope" aria-hidden="true"></i></span>
           <input class="form-control" id="a-email" name="email" type="email" autocomplete="username" placeholder="name@novahome.eg" required>
+          <div class="invalid-feedback">Enter your admin email address.</div>
         </div>
-        <div class="invalid-feedback">Enter your admin email address.</div>
       </div>
 
       <div class="mb-3">
         <div class="d-flex justify-content-between align-items-center mb-1">
           <label class="form-label fw-medium small mb-0" for="a-pass">Password</label>
         </div>
-        <div class="input-group">
-          <span class="input-group-text bg-white text-muted-nova"><i class="bi bi-key"></i></span>
+        <div class="input-group has-validation">
+          <span class="input-group-text bg-white text-muted-nova"><i class="bi bi-key" aria-hidden="true"></i></span>
           <input class="form-control" id="a-pass" name="password" type="password" autocomplete="current-password" minlength="6" placeholder="••••••••" required>
-          <button class="btn btn-outline-secondary" type="button" id="toggle-pwd" aria-label="Toggle password visibility">
-            <i class="bi bi-eye" id="toggle-pwd-icon"></i>
+          <button class="btn btn-outline-secondary" type="button" id="toggle-pwd" data-password-toggle aria-label="Show password" title="Show password" aria-controls="a-pass" aria-pressed="false">
+            <i class="bi bi-eye" aria-hidden="true"></i>
           </button>
+          <div class="invalid-feedback">Enter your password (6+ characters).</div>
         </div>
-        <div class="invalid-feedback">Enter your password (6+ characters).</div>
       </div>
 
       <div class="alert alert-danger mb-3 small" id="admin-login-error" hidden tabindex="-1" role="alert"></div>
@@ -116,18 +116,6 @@ $pageTitle = 'Admin Sign In | NOVA Home';
   var errBox = document.getElementById('admin-login-error');
   var btn = document.getElementById('admin-login-btn');
   var passInput = document.getElementById('a-pass');
-  var toggleBtn = document.getElementById('toggle-pwd');
-  var toggleIcon = document.getElementById('toggle-pwd-icon');
-
-  if (toggleBtn && passInput) {
-    toggleBtn.addEventListener('click', function () {
-      var isPass = passInput.type === 'password';
-      passInput.type = isPass ? 'text' : 'password';
-      if (toggleIcon) {
-        toggleIcon.className = isPass ? 'bi bi-eye-slash' : 'bi bi-eye';
-      }
-    });
-  }
 
   if (!form) return;
   var fail = function (msg) {
@@ -205,5 +193,6 @@ $pageTitle = 'Admin Sign In | NOVA Home';
   });
 })();
 </script>
+<script src="../js/ui/password-toggle.js"></script>
 </body>
 </html>

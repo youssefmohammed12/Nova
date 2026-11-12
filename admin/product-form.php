@@ -222,6 +222,28 @@ if (is_post()) {
     }
 }
 
+$errorTargetMap = [
+    'Product name is required.' => 'pf-name',
+    'Slug must be lowercase letters, numbers and dashes (e.g. sahara-vase).' => 'pf-slug',
+    'Category is invalid.' => 'pf-cat',
+    'Price must be a valid amount (1 or more EGP).' => 'pf-price',
+    'Old price must be a valid amount.' => 'pf-old',
+    'Rating must be between 0 and 5.' => 'pf-rating',
+    'Description is required.' => 'pf-desc',
+    'Each specification needs both a label and a value.' => 'spec-rows',
+    'A product can have at most 20 specifications.' => 'spec-rows',
+    'Image paths must reference an existing file under assets/images/ with an approved format (.webp, .jpg, .jpeg, .png, .svg).' => 'img-rows',
+    'A product can have at most 9 images.' => 'img-rows',
+    'Slug already exists - choose a different one.' => 'pf-slug',
+];
+$errorTargets = [];
+foreach ($errs as $message) {
+    if (isset($errorTargetMap[$message])) {
+        $errorTargets[$errorTargetMap[$message]] = true;
+    }
+}
+$fieldHasError = static fn (string $target): bool => isset($errorTargets[$target]);
+
 $adminTitle = ($mode === 'update' ? 'Edit Product' : 'Add Product') . ' | NOVA Admin';
 $adminNav = 'products';
 require __DIR__ . '/../includes/admin-head.php';
@@ -241,11 +263,18 @@ require __DIR__ . '/../includes/admin-head.php';
 </div>
 
 <?php if ($errs): ?>
-<div class="alert alert-danger mb-4" role="alert">
-  <div class="fw-semibold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>Please correct the following errors:</div>
+<div class="alert alert-danger mb-4" id="product-form-errors" role="alert" aria-labelledby="product-form-error-title">
+  <div class="fw-semibold mb-1" id="product-form-error-title"><i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>Please correct the following errors:</div>
   <ul class="mb-0 ps-3">
     <?php foreach ($errs as $m): ?>
-      <li><?= e($m) ?></li>
+      <?php $target = $errorTargetMap[$m] ?? null; ?>
+      <li>
+        <?php if ($target !== null): ?>
+          <a href="#<?= e($target) ?>" data-error-target="<?= e($target) ?>"><?= e($m) ?></a>
+        <?php else: ?>
+          <?= e($m) ?>
+        <?php endif; ?>
+      </li>
     <?php endforeach; ?>
   </ul>
 </div>
@@ -270,16 +299,16 @@ require __DIR__ . '/../includes/admin-head.php';
         <div class="row g-3">
           <div class="col-12">
             <label class="form-label fw-medium small" for="pf-name">Product Name <span class="text-danger">*</span></label>
-            <input class="form-control" id="pf-name" name="name" maxlength="160" required placeholder="e.g. Sahara Ceramic Vase" value="<?= e($old['name']) ?>">
+            <input class="form-control<?= $fieldHasError('pf-name') ? ' is-invalid' : '' ?>" id="pf-name" name="name" maxlength="160" required placeholder="e.g. Sahara Ceramic Vase" value="<?= e($old['name']) ?>"<?= $fieldHasError('pf-name') ? ' aria-invalid="true"' : '' ?>>
           </div>
           <div class="col-md-6">
             <label class="form-label fw-medium small" for="pf-slug">URL Slug <span class="text-danger">*</span></label>
-            <input class="form-control" id="pf-slug" name="slug" maxlength="80" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="e.g. sahara-ceramic-vase" value="<?= e($old['slug']) ?>">
+            <input class="form-control<?= $fieldHasError('pf-slug') ? ' is-invalid' : '' ?>" id="pf-slug" name="slug" maxlength="80" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="e.g. sahara-ceramic-vase" value="<?= e($old['slug']) ?>"<?= $fieldHasError('pf-slug') ? ' aria-invalid="true"' : '' ?>>
             <div class="form-text small text-muted-nova">Lowercase letters, numbers, and dashes. Used in links and customer orders.</div>
           </div>
           <div class="col-md-6">
             <label class="form-label fw-medium small" for="pf-cat">Category <span class="text-danger">*</span></label>
-            <select class="form-select" id="pf-cat" name="category_id" required>
+            <select class="form-select<?= $fieldHasError('pf-cat') ? ' is-invalid' : '' ?>" id="pf-cat" name="category_id" required<?= $fieldHasError('pf-cat') ? ' aria-invalid="true"' : '' ?>>
               <option value="">Select category…</option>
               <?php foreach ($categories as $c): ?>
               <option value="<?= e((string) $c['id']) ?>"<?= (string) $c['id'] === (string) $old['category_id'] ? ' selected' : '' ?>><?= e((string) $c['name']) ?></option>
@@ -288,7 +317,7 @@ require __DIR__ . '/../includes/admin-head.php';
           </div>
           <div class="col-12">
             <label class="form-label fw-medium small" for="pf-desc">Description <span class="text-danger">*</span></label>
-            <textarea class="form-control" id="pf-desc" name="description" rows="4" maxlength="5000" required placeholder="Describe the materials, craftsmanship, dimensions, and styling inspiration…"><?= e($old['description']) ?></textarea>
+            <textarea class="form-control<?= $fieldHasError('pf-desc') ? ' is-invalid' : '' ?>" id="pf-desc" name="description" rows="4" maxlength="5000" required placeholder="Describe the materials, craftsmanship, dimensions, and styling inspiration…"<?= $fieldHasError('pf-desc') ? ' aria-invalid="true"' : '' ?>><?= e($old['description']) ?></textarea>
           </div>
         </div>
       </div>
@@ -302,15 +331,15 @@ require __DIR__ . '/../includes/admin-head.php';
           </div>
           <button class="btn btn-ghost btn-sm" type="button" id="add-spec"><i class="bi bi-plus-lg me-1"></i>Add Row</button>
         </div>
-        <div id="spec-rows" class="d-flex flex-column gap-2">
+        <div id="spec-rows" class="d-flex flex-column gap-2" tabindex="-1">
 <?php $specInit = $oldSpecs ?: [['key' => '', 'value' => '']]; ?>
 <?php foreach ($specInit as $i => $sp): ?>
           <div class="row g-2 align-items-center spec-row">
             <div class="col-md-4">
-              <input class="form-control form-control-sm" name="spec_key[]" maxlength="80" placeholder="Label (e.g. Material)" value="<?= e($sp['key']) ?>">
+              <input class="form-control form-control-sm" name="spec_key[]" maxlength="80" aria-label="Specification label" placeholder="Label (e.g. Material)" value="<?= e($sp['key']) ?>">
             </div>
             <div class="col-md-7">
-              <input class="form-control form-control-sm" name="spec_value[]" maxlength="255" placeholder="Value (e.g. Terracotta clay)" value="<?= e($sp['value']) ?>">
+              <input class="form-control form-control-sm" name="spec_value[]" maxlength="255" aria-label="Specification value" placeholder="Value (e.g. Terracotta clay)" value="<?= e($sp['value']) ?>">
             </div>
             <div class="col-md-1 text-end">
               <button class="btn btn-outline-danger btn-sm px-2" type="button" data-remove-row aria-label="Remove specification"><i class="bi bi-trash"></i></button>
@@ -329,18 +358,18 @@ require __DIR__ . '/../includes/admin-head.php';
           </div>
           <button class="btn btn-ghost btn-sm" type="button" id="add-img"><i class="bi bi-plus-lg me-1"></i>Add Image</button>
         </div>
-        <div id="img-rows" class="d-flex flex-column gap-2">
+        <div id="img-rows" class="d-flex flex-column gap-2" tabindex="-1">
 <?php $imgInit = $oldImages ?: [['path' => '', 'alt' => '']]; ?>
 <?php foreach ($imgInit as $i => $im): ?>
           <div class="row g-2 align-items-center img-row">
             <div class="col-md-7">
               <div class="input-group input-group-sm">
                 <span class="input-group-text bg-light text-muted-nova"><i class="bi bi-image"></i></span>
-                <input class="form-control form-control-sm" name="image_path[]" maxlength="255" placeholder="assets/images/filename.webp" value="<?= e($im['path']) ?>">
+                <input class="form-control form-control-sm" name="image_path[]" maxlength="255" aria-label="Product image path" placeholder="assets/images/filename.webp" value="<?= e($im['path']) ?>">
               </div>
             </div>
             <div class="col-md-4">
-              <input class="form-control form-control-sm" name="alt_text[]" maxlength="200" placeholder="Alt description" value="<?= e($im['alt']) ?>">
+              <input class="form-control form-control-sm" name="alt_text[]" maxlength="200" aria-label="Product image alt text" placeholder="Alt description" value="<?= e($im['alt']) ?>">
             </div>
             <div class="col-md-1 text-end">
               <button class="btn btn-outline-danger btn-sm px-2" type="button" data-remove-row aria-label="Remove image"><i class="bi bi-trash"></i></button>
@@ -363,20 +392,20 @@ require __DIR__ . '/../includes/admin-head.php';
             <label class="form-label fw-medium small" for="pf-price">Regular Price (EGP) <span class="text-danger">*</span></label>
             <div class="input-group">
               <span class="input-group-text bg-white text-muted-nova">EGP</span>
-              <input class="form-control" id="pf-price" name="price" type="number" min="1" step="1" required placeholder="1450" value="<?= e($old['price']) ?>">
+              <input class="form-control<?= $fieldHasError('pf-price') ? ' is-invalid' : '' ?>" id="pf-price" name="price" type="number" min="1" step="1" required placeholder="1450" value="<?= e($old['price']) ?>"<?= $fieldHasError('pf-price') ? ' aria-invalid="true"' : '' ?>>
             </div>
           </div>
           <div class="col-12">
             <label class="form-label fw-medium small" for="pf-old">Compare-at Price (EGP)</label>
             <div class="input-group">
               <span class="input-group-text bg-white text-muted-nova">EGP</span>
-              <input class="form-control" id="pf-old" name="old_price" type="number" min="0" step="1" placeholder="Optional original price" value="<?= e($old['old_price']) ?>">
+              <input class="form-control<?= $fieldHasError('pf-old') ? ' is-invalid' : '' ?>" id="pf-old" name="old_price" type="number" min="0" step="1" placeholder="Optional original price" value="<?= e($old['old_price']) ?>"<?= $fieldHasError('pf-old') ? ' aria-invalid="true"' : '' ?>>
             </div>
             <div class="form-text small text-muted-nova">Displayed with strike-through styling when set.</div>
           </div>
           <div class="col-6">
             <label class="form-label fw-medium small" for="pf-rating">Rating (0 to 5)</label>
-            <input class="form-control" id="pf-rating" name="rating" type="number" min="0" max="5" step="0.1" value="<?= e($old['rating']) ?>">
+            <input class="form-control<?= $fieldHasError('pf-rating') ? ' is-invalid' : '' ?>" id="pf-rating" name="rating" type="number" min="0" max="5" step="0.1" value="<?= e($old['rating']) ?>"<?= $fieldHasError('pf-rating') ? ' aria-invalid="true"' : '' ?>>
           </div>
           <div class="col-6">
             <label class="form-label fw-medium small" for="pf-reviews">Review Count</label>
@@ -429,11 +458,32 @@ require __DIR__ . '/../includes/admin-head.php';
   }
   var spec = document.getElementById('add-spec');
   if (spec) spec.addEventListener('click', function () {
-    addRow('spec-rows', '<div class="row g-2 align-items-center spec-row"><div class="col-md-4"><input class="form-control form-control-sm" name="spec_key[]" maxlength="80" placeholder="Label"></div><div class="col-md-7"><input class="form-control form-control-sm" name="spec_value[]" maxlength="255" placeholder="Value"></div><div class="col-md-1 text-end"><button class="btn btn-outline-danger btn-sm px-2" type="button" data-remove-row aria-label="Remove specification"><i class="bi bi-trash"></i></button></div></div>');
+    addRow('spec-rows', '<div class="row g-2 align-items-center spec-row"><div class="col-md-4"><input class="form-control form-control-sm" name="spec_key[]" maxlength="80" aria-label="Specification label" placeholder="Label"></div><div class="col-md-7"><input class="form-control form-control-sm" name="spec_value[]" maxlength="255" aria-label="Specification value" placeholder="Value"></div><div class="col-md-1 text-end"><button class="btn btn-outline-danger btn-sm px-2" type="button" data-remove-row aria-label="Remove specification"><i class="bi bi-trash"></i></button></div></div>');
   });
+  var errorSummary = document.getElementById('product-form-errors');
+  function focusErrorTarget(targetId) {
+    var target = document.getElementById(targetId);
+    if (!target) return;
+    var control = target.matches('input, select, textarea, button')
+      ? target
+      : target.querySelector('input:not([type="hidden"]), select, textarea, button');
+    if (control) control.focus();
+  }
+  if (errorSummary) {
+    var firstErrorLink = errorSummary.querySelector('[data-error-target]');
+    if (firstErrorLink) focusErrorTarget(firstErrorLink.getAttribute('data-error-target'));
+    errorSummary.addEventListener('click', function (event) {
+      if (!event.target || typeof event.target.closest !== 'function') return;
+      var link = event.target.closest('[data-error-target]');
+      if (!link) return;
+      event.preventDefault();
+      focusErrorTarget(link.getAttribute('data-error-target'));
+    });
+  }
+
   var img = document.getElementById('add-img');
   if (img) img.addEventListener('click', function () {
-    addRow('img-rows', '<div class="row g-2 align-items-center img-row"><div class="col-md-7"><div class="input-group input-group-sm"><span class="input-group-text bg-light text-muted-nova"><i class="bi bi-image"></i></span><input class="form-control form-control-sm" name="image_path[]" maxlength="255" placeholder="assets/images/filename.webp"></div></div><div class="col-md-4"><input class="form-control form-control-sm" name="alt_text[]" maxlength="200" placeholder="Alt description"></div><div class="col-md-1 text-end"><button class="btn btn-outline-danger btn-sm px-2" type="button" data-remove-row aria-label="Remove image"><i class="bi bi-trash"></i></button></div></div>');
+    addRow('img-rows', '<div class="row g-2 align-items-center img-row"><div class="col-md-7"><div class="input-group input-group-sm"><span class="input-group-text bg-light text-muted-nova"><i class="bi bi-image"></i></span><input class="form-control form-control-sm" name="image_path[]" maxlength="255" aria-label="Product image path" placeholder="assets/images/filename.webp"></div></div><div class="col-md-4"><input class="form-control form-control-sm" name="alt_text[]" maxlength="200" aria-label="Product image alt text" placeholder="Alt description"></div><div class="col-md-1 text-end"><button class="btn btn-outline-danger btn-sm px-2" type="button" data-remove-row aria-label="Remove image"><i class="bi bi-trash"></i></button></div></div>');
   });
   document.addEventListener('click', function (e) {
     var b = e.target.closest('[data-remove-row]');

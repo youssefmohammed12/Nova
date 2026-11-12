@@ -24,7 +24,8 @@
       if (infoList) infoList.hidden = true;
       if (metaEl) metaEl.textContent = '';
       if (boxEl) {
-        boxEl.innerHTML = '<p class="alert alert-info mb-0">No order confirmation could be loaded because no order reference was provided. If you recently placed an order, you can review it in your <a href="account/orders.php">order history</a> or <a href="shop.html">continue shopping</a>.</p>';
+        boxEl.innerHTML = '<p class="alert alert-info mb-0" role="status">No order confirmation could be loaded because no order reference was provided. If you recently placed an order, you can review it in your <a href="account/orders.php">order history</a> or <a href="shop.html">continue shopping</a>.</p>';
+        boxEl.setAttribute('aria-busy', 'false');
       }
       const sub = $('#ok-sub'), del = $('#ok-del'), tot = $('#ok-total');
       if (sub) sub.textContent = '—';
@@ -43,7 +44,8 @@
       if (infoList) infoList.hidden = true;
       if (metaEl) metaEl.textContent = '';
       if (boxEl) {
-        boxEl.innerHTML = '<p class="alert alert-warning mb-0">Order details could not be loaded. Please sign in to the account used to place the order, then review your order history.</p>';
+        boxEl.innerHTML = '<p class="alert alert-warning mb-0" role="alert">Order details could not be loaded. Please sign in to the account used to place the order, then review your order history.</p>';
+        boxEl.setAttribute('aria-busy', 'false');
       }
       const sub = $('#ok-sub'), del = $('#ok-del'), tot = $('#ok-total');
       if (sub) sub.textContent = '—';
@@ -52,7 +54,7 @@
     };
 
     if (!ref) { showMissing(); return; }
-    if (boxEl) boxEl.innerHTML = '<p class="text-muted-nova mb-0">Loading order details…</p>';
+    if (boxEl) { boxEl.innerHTML = '<p class="text-muted-nova mb-0">Loading order details…</p>'; boxEl.setAttribute('aria-busy', 'true'); }
     fetch('api/order.php?ref=' + encodeURIComponent(ref), { headers: { Accept: 'application/json' } })
       .then(async r => ({ status: r.status, body: await r.json().catch(() => null) }))
       .then(({ status, body }) => {
@@ -72,6 +74,7 @@
           boxEl.innerHTML = items.length
             ? items.map(i => `<div class="summary-line"><img src="${esc(i.slug ? NOVA.imgs(i.slug)[0] : (NOVA.BASE || '') + 'favicon.svg')}" width="52" height="52" alt=""><span>${esc(i.product_name)} x ${Number(i.quantity) || 0}</span><span>${fmt(i.line_total)}</span></div>`).join('')
             : '<p class="text-muted-nova mb-0">No items to display.</p>';
+          boxEl.setAttribute('aria-busy', 'false');
         }
         const sub = $('#ok-sub'), del = $('#ok-del'), tot = $('#ok-total');
         if (sub) sub.textContent = fmt(d.subtotal);

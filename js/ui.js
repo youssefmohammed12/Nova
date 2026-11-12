@@ -15,7 +15,7 @@
     const on = wishSet ? wishSet.has(p.id) : NOVA.wish.has(p.id);
     const wishLabel = esc(on ? `Remove ${p.name} from wishlist` : `Add ${p.name} to wishlist`);
     const altImgHtml = b ? `<img class="product-card__img product-card__img--alt" src="${b}" width="600" height="600" loading="lazy" alt="" aria-hidden="true">` : '';
-    const matTag = p.material ? `<span class="product-card__mat"> · ${esc(p.material)}</span>` : '';
+    const matTag = p.material ? `<span class="product-card__mat">${esc(p.material)}</span>` : '';
     return `<article class="product-card">
       <div class="product-card__media">
         <a href="${B}product.html?id=${pid}" data-quick="${esc(p.id)}" aria-label="Quick view ${name}" aria-haspopup="dialog" aria-controls="quickModal">
@@ -24,7 +24,7 @@
         </a>
         ${badge}<button class="wish-btn" type="button" data-wish="${esc(p.id)}" aria-pressed="${on}" aria-label="${wishLabel}"><i class="bi ${on ? 'bi-heart-fill' : 'bi-heart'}" aria-hidden="true"></i></button>
       </div>
-      <div class="product-card__body"><span class="product-card__cat">${esc(catName(p.cat))}${matTag}</span>
+      <div class="product-card__body"><span class="product-card__cat">${esc(catName(p.cat))}</span>${matTag}
         <h3 class="product-card__name"><a href="${B}product.html?id=${pid}">${name}</a></h3>
         <div class="price-row"><span class="price">${fmt(p.price)}</span>${p.old ? `<span class="price--old"><span class="visually-hidden">Was </span>${fmt(p.old)}</span>` : ''}</div>
         <button class="btn btn-ghost btn-sm product-card__add" type="button" data-add="${esc(p.id)}">Add to cart</button></div></article>`;
@@ -207,10 +207,11 @@
       const add = e.target.closest('[data-add]'), wish = e.target.closest('[data-wish]');
       if (add) { const prod = NOVA.find(add.dataset.add); if (!prod) { toast('Sorry, that product is no longer available.'); return; } const ok = NOVA.cart.add(prod.id, Number(add.dataset.qty) || 1); toast(ok ? prod.name + ' added to your cart' : 'Sorry, that product is no longer available.'); }
       if (wish) {
-        const on = NOVA.wish.toggle(wish.dataset.wish);
         const prod = NOVA.find(wish.dataset.wish);
-        document.querySelectorAll(`[data-wish="${wish.dataset.wish}"]`).forEach(b => { b.setAttribute('aria-pressed', String(on)); if (prod) b.setAttribute('aria-label', (on ? `Remove ${prod.name} from wishlist` : `Add ${prod.name} to wishlist`)); const i = b.querySelector('i'); if (i && !b.classList.contains('btn')) i.className = 'bi ' + (on ? 'bi-heart-fill' : 'bi-heart'); b.classList.remove('is-beat'); void b.offsetWidth; b.classList.add('is-beat'); });
-        toast(on ? 'Saved to your wishlist' : 'Removed from your wishlist');
+        const on = NOVA.wish.toggle(wish.dataset.wish);
+        if (!prod || on === null) return;
+        document.querySelectorAll(`[data-wish="${wish.dataset.wish}"]`).forEach(b => { b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-label', (on ? `Remove ${prod.name} from wishlist` : `Add ${prod.name} to wishlist`)); const i = b.querySelector('i'); if (i && !b.classList.contains('btn')) i.className = 'bi ' + (on ? 'bi-heart-fill' : 'bi-heart'); b.classList.remove('is-beat'); void b.offsetWidth; b.classList.add('is-beat'); });
+        toast(on ? `${prod.name} saved to your wishlist.` : `${prod.name} removed from your wishlist.`);
       }
     });
 

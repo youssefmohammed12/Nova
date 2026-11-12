@@ -91,7 +91,7 @@ $badge = static function (string $s): string {
 <form class="admin-filter-bar mb-4" method="get" action="orders.php">
   <div class="input-group" style="min-width: 220px; flex: 1 1 220px;">
     <span class="input-group-text bg-white border-end-0 text-muted-nova"><i class="bi bi-search"></i></span>
-    <input class="form-control border-start-0 ps-0" id="o-q" name="q" type="search" placeholder="Search order reference or customer name…" value="<?= e($q) ?>">
+    <input class="form-control border-start-0 ps-0" id="o-q" name="q" type="search" aria-label="Search orders by reference or customer name" placeholder="Search order reference or customer name…" value="<?= e($q) ?>">
   </div>
 
   <div style="min-width: 170px; flex: 0 1 180px;">
@@ -119,7 +119,7 @@ $badge = static function (string $s): string {
 </form>
 
 <!-- Desktop Orders Table -->
-<div class="admin-table-wrap d-none d-md-block">
+<div class="admin-table-wrap d-none d-xxl-block">
   <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
     <span class="small text-muted-nova">Showing <strong><?= count($orders) ?></strong> order<?= count($orders) === 1 ? '' : 's' ?></span>
     <span class="small text-muted-nova">Click order ref to view full details and update fulfillment status</span>
@@ -171,7 +171,7 @@ $badge = static function (string $s): string {
 </div>
 
 <!-- Mobile Order Cards -->
-<div class="d-md-none d-grid gap-3">
+<div class="admin-orders-mobile d-xxl-none d-grid gap-3">
 <?php foreach ($orders as $o): ?>
   <article class="admin-card">
     <div class="d-flex justify-content-between align-items-start mb-2">

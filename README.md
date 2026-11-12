@@ -83,7 +83,7 @@ dedicated demo endpoints — see [Demo access](#demo-access) and the
 - Session hardening: `session_regenerate_id(true)` on login, HttpOnly + SameSite=Lax cookies, Secure flag automatically enabled under HTTPS
 - Separate customer and administrator session state with server-side authorization gateways (`require_customer()`, `require_admin()`) — pages redirect unauthorized visitors themselves; nothing depends on hidden links
 - bcrypt password hashing for both customers and administrators
-- Sensitive directories (`config/`, `database/`, `includes/`, `scripts/`) blocked from direct web access via `.htaccess`; root response headers add `nosniff`, a strict referrer policy, anti-framing, and a restrictive permissions policy (locally verified on static, PHP, and API routes)
+- Sensitive directories (`config/`, `database/`, `includes/`, `scripts/`) are blocked from direct web access via `.htaccess`; root response headers add `nosniff`, a strict referrer policy, anti-framing, a restrictive permissions policy, and a host-only one-year HSTS policy. The public host was rechecked after deployment on 2026-11-12: the directory rules and all five response headers, including the host-only one-year HSTS policy, were present.
 - Development-only probe (`health.php`) and development-only one-click demo sign-in — both enforced **server-side** and disabled unless the local configuration explicitly says so
 
 ## Tech stack
@@ -103,106 +103,45 @@ dedicated demo endpoints — see [Demo access](#demo-access) and the
 
 ## Screenshots
 
-Captured from the running application (desktop 1440×900, mobile 390×844). Customer and admin views are signed in through the development demo account, which contains only synthetic fixture data.
+The gallery is intentionally limited to **eight current captures**: two storefront viewports and one representative screen for each major shopping/account workflow. Desktop captures are 1440Ã—900; the mobile homepage is 390Ã—844. The cart and checkout use synthetic browser-only fixtures, and no order is submitted. Customer and admin captures use the local synthetic demo accounts.
 
-### 1. Public storefront
+### Storefront
 
-![NOVA Home homepage — editorial hero and real product photography](docs/screenshots/homepage-desktop.png)
+![NOVA Home homepage â€” desktop](docs/screenshots/homepage-desktop.png)
 
-*Homepage — editorial hero with licensed product photography and the shared frosted-glass navbar.*
+*Homepage at desktop width, including the editorial hero and current navigation.*
 
-![NOVA Home homepage at a mobile viewport](docs/screenshots/homepage-mobile.png)
+![NOVA Home homepage â€” mobile](docs/screenshots/homepage-mobile.png)
 
-*The same homepage on a 390px mobile viewport.*
+*Responsive homepage at a 390px mobile viewport.*
 
-![Shop page with category pills, filters, and product cards](docs/screenshots/shop-desktop.png)
+![NOVA Home shop](docs/screenshots/shop-desktop.png)
 
-*Shop — category pills with live counts, material and price filters, sorting, and product cards.*
+*Product catalogue with category navigation, filters, sorting and product cards.*
 
-![Shop page with the Lighting category filter active](docs/screenshots/shop-filtered.png)
+![NOVA Home product detail](docs/screenshots/product-detail.png)
 
-*A meaningful active filter: the Lighting category with its removable filter chip.*
+*Product gallery, price, specifications and delivery information.*
 
-![Product detail page](docs/screenshots/product-detail.png)
+### Shopping and account workflows
 
-*Product detail — gallery, pricing, availability disclaimer, delivery information, and the city delivery estimator.*
+![NOVA Home shopping cart](docs/screenshots/cart.png)
 
-![Quick View modal open on a product](docs/screenshots/quick-view.png)
+*Cart with a synthetic local fixture and delivery progress.*
 
-*Quick View — inspect a product without leaving the catalogue.*
+![NOVA Home checkout](docs/screenshots/checkout.png)
 
-![Populated shopping cart with free-delivery progress](docs/screenshots/cart.png)
+*Cash on Delivery checkout filled with synthetic demo details; nothing is submitted.*
 
-*Cart with a populated free-delivery progress bar and live order summary.*
+![NOVA Home customer dashboard](docs/screenshots/customer-dashboard.png)
 
-![Checkout form filled with demo information](docs/screenshots/checkout.png)
+*Customer dashboard populated only with the local synthetic demo account.*
 
-*Cash on Delivery checkout, filled with the synthetic demo identity (nothing is submitted in this capture).*
+### Admin portal
 
-![Shop page at a mobile viewport](docs/screenshots/shop-mobile.png)
+![NOVA Home admin dashboard](docs/screenshots/admin-dashboard.png)
 
-*Responsive shop browsing on mobile — collapsible filters and two-column product cards.*
-
-### 2. Customer account
-
-![Customer login with development demo option](docs/screenshots/customer-login.png)
-
-*Customer login. One-click access is controlled server-side: development demo locally, or the separate explicit public-demo switch on the hosted showcase.*
-
-![Customer dashboard](docs/screenshots/customer-dashboard.png)
-
-*Dashboard — order, address, and wishlist metrics with the latest order and default address.*
-
-![Customer order history](docs/screenshots/customer-orders.png)
-
-*Order history with statuses across the full fulfilment workflow.*
-
-![Customer wishlist](docs/screenshots/customer-wishlist.png)
-
-*Populated wishlist (demo fixture items).*
-
-![Address management](docs/screenshots/customer-addresses.png)
-
-*Address book with default-address handling and the add-address form.*
-
-![Profile management](docs/screenshots/customer-profile.png)
-
-*Profile management — email is intentionally locked against direct changes.*
-
-### 3. Admin portal
-
-![Administrator login](docs/screenshots/admin-login.png)
-
-*Administrator login. One-click access is controlled server-side by the development switch locally or the separate public-demo switch on the hosted showcase.*
-
-![Administrator dashboard](docs/screenshots/admin-dashboard.png)
-
-*Dashboard — live catalogue metrics, recent orders, and quick actions.*
-
-![Product management table](docs/screenshots/admin-products.png)
-
-*Product management with search, filters, thumbnails, badges, and visibility toggles.*
-
-![Product edit form](docs/screenshots/admin-product-form.png)
-
-*Product edit form — basic info, pricing, specifications, and publishing controls (opened on a real catalogue product, no changes saved).*
-
-![Category management](docs/screenshots/admin-categories.png)
-
-*Category management with linked product counts.*
-
-![Order management list](docs/screenshots/admin-orders.png)
-
-*Order management filtered to the demo customer's orders — only synthetic data is shown.*
-
-![Order detail and fulfilment workflow](docs/screenshots/admin-order-detail.png)
-
-*Order detail — customer block, fulfilment workflow, recorded financials, and the item snapshot.*
-
-![Store settings](docs/screenshots/admin-settings.png)
-
-*Store settings — business identity and the delivery pricing rules that drive checkout.*
-
+*Admin dashboard; non-demo customer names in recent activity are masked in the capture.*
 ---
 
 ## Getting started
@@ -452,19 +391,19 @@ Configuration rules that apply to every environment:
 
 ## Future deployment checklist
 
-NOVA Home is **live on InfinityFree** as a portfolio demonstration (see [Live demo](#live-demo)) and **prepared for GitHub publication**. The items below were verified against the live site on **2026-10-17** — checked items are done; two configuration items remain:
+NOVA Home is **live on InfinityFree** as a portfolio demonstration (see [Live demo](#live-demo)) and **prepared for GitHub publication**. The original hosting/database setup checks were completed on **2026-10-17**; public routes, production health behavior, response headers and directory restrictions received a read-only recheck on **2026-11-12**. The local Milestone 3/M4 changes have not been uploaded.
 
 - [x] Select hosting that supports PHP 8.1+ and MySQL/MariaDB with `pdo_mysql` (live stack: PHP 8.4.25, MariaDB 11.4.13)
 - [x] Create the production database and a dedicated least-privilege database user (catalog seeded and serving: 5 categories / 14 products / 14 images / 42 specs / 6 settings)
 - [x] Upload the codebase (excluding local-only `config/config.php`, `database/backups/`, `node_modules/`, and logs — `.gitignore` already excludes them)
-- [ ] Create `config/config.php` from the example with production credentials, `env => 'production'`, `debug => false`, and an explicit `base_url` — **still open:** the live `health.php` currently returns `200`, which means `env` is still `'development'` on the host; set `env => 'production'`, `debug => false`, and `'base_url' => '/'` in the private live config
-- [x] Confirm `demo_access` stays `false` (the default) — the development-only demo must be impossible in production (verified live: the dev demo endpoint returns `403` even though `env` is still development)
-- [x] Decide on the public demo: leave `public_demo_access => false` (no demo buttons, endpoints `403`), or set it `true` **only** on the intentional portfolio demo (see `docs/development/INFINITYFREE_DEMO_SETUP.md`) and import `database/demo-data.infinityfree.sql` via phpMyAdmin (done: both demo buttons live; both public demo sign-ins return `200` as the dedicated identities)
+- [ ] Confirm the private `config/config.php` uses production credentials, `env => 'production'`, `debug => false`, and an explicit `base_url`. **2026-11-12 update:** the public `health.php` now returns `404`, consistent with production mode. The private file was deliberately not inspected, so `debug => false`, `base_url`, and credential quality still require owner-side confirmation.
+- [x] Keep development-only `demo_access` disabled in production. A previous direct endpoint check returned `403`; current public login pages expose only the dedicated public-demo buttons. Do not enable or invoke development-only demo endpoints on the hosted site.
+- [x] Public demo is enabled for this intentional portfolio demonstration: both customer and admin demo buttons were visible on their respective public login pages on 2026-11-12. No demo sign-in was attempted during this recheck.
 - [x] Apply `database/schema.sql` + `database/seed.sql` (and any newer migrations) to the production database; create the administrator via the CLI script or a secure one-off (admin authentication verified live through the dedicated demo administrator)
-- [x] Enable HTTPS and verify session cookies carry the `Secure` flag (verified live: `PHPSESSID` is `secure=true, httpOnly=true, samesite=Lax` over HTTPS)
-- [x] Verify `.htaccess` protection is honored (or replicate the deny rules in server config) — confirm `config/`, `database/`, `includes/`, and `scripts/` return 403/404 (verified live: all four return `403`)
-- [ ] Confirm `health.php` returns 404 and no PHP warnings are visible anywhere — **partially open:** zero PHP warnings were found on any tested page, but `health.php` returns `200` until `env => 'production'` is set (previous item); it then returns `404` automatically
-- [x] Run the smoke checklist on the deployed site: homepage, product detail, cart, checkout, customer login/registration, one account page, admin login, one management page (all verified live: `200`, rendered content, zero warnings)
+- [x] Enable HTTPS and verify session cookies carry the `Secure` flag. Public browser metadata on 2026-11-12 showed `PHPSESSID` with `Secure`, `HttpOnly`, and `SameSite=Lax`; the browser runner could not guarantee a fully fresh cookie context.
+- [x] Verify `.htaccess` protection is honored (or replicate the deny rules in server config) — public recheck on 2026-11-12: `config/` and `includes/` returned `403`; `database/` and `scripts/` returned `404`. All four paths were inaccessible.
+- [x] Confirm `health.php` returns `404` — verified on the public host on 2026-11-12. A full PHP warning/error scan across every route has not been repeated in this pass and remains open.
+- [~] Public read-only smoke on 2026-11-12 covered homepage, Shop, one Product Details page, cart, checkout/sign-in redirect, registration, order-confirmation empty state, customer/admin login, protected customer/admin redirects, catalogue API, health probe, and sensitive-directory access. No visible PHP warnings or hosting challenge appeared. Authenticated account/admin management pages were not opened, and the local HSTS change has not been deployed; repeat the smoke and verify HSTS after the next approved upload.
 - [x] Add the real live-demo link to this README after successful deployment
 
 ---

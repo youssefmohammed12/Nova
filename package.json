@@ -2,7 +2,20 @@
   "scripts": {
     "test:api": "php scripts/test_apis.php",
     "test:browser": "node scripts/playwright_audit.js",
-    "test:shop-ui": "node scripts/test_shop_ui.js"
+    "test:shop-ui": "node scripts/test_shop_ui.js",
+    "test:ui-polish": "node scripts/test_ui_polish.js",
+    "test:admin-form-a11y": "node scripts/test_admin_form_accessibility.js",
+    "test:product-details": "node scripts/test_product_details.js",
+    "test:cart-ui": "node scripts/test_cart_ui.js",
+    "test:checkout-ui": "node scripts/test_checkout_ui.js",
+    "test:wishlist-ui": "node scripts/test_wishlist_ui.js",
+    "test:customer-messaging": "node scripts/test_customer_messaging.js",
+    "test:popular-search": "node scripts/test_popular_search.js",
+    "test:m3-visual-foundation": "node scripts/test_m3_visual_foundation.js",
+    "test:legal-pages": "node scripts/test_legal_pages.js",
+    "test:footer-ui": "node scripts/test_footer_ui.js",
+    "test:syntax": "node scripts/test_syntax.js",
+    "test:release-readiness": "node scripts/test_release_readiness.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1"

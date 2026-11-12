@@ -224,7 +224,7 @@ $badge = static function (string $s): string {
     <span class="small text-muted-nova">Authoritative customer purchase record</span>
   </div>
 
-  <div class="table-responsive">
+  <div class="table-responsive d-none d-xxl-block">
     <table class="table align-middle m-0">
       <thead>
         <tr>
@@ -272,6 +272,41 @@ $resolveItemImage = static function (?string $rawPath): string {
       </tbody>
     </table>
   </div>
+
+  <div class="admin-order-items-mobile d-xxl-none d-grid gap-3 p-3">
+<?php foreach ($items as $it): ?>
+    <article class="admin-card admin-order-item-card">
+      <div class="admin-order-item-card__top">
+        <img class="admin-order-item-card__thumb" src="<?= e($resolveItemImage($it['image_path'] ?? null)) ?>" width="60" height="60" alt="" loading="lazy">
+        <div class="admin-order-item-card__details">
+          <h3 class="h6 fw-semibold mb-1"><?= e((string) $it['product_name']) ?></h3>
+          <?php if (!empty($it['prod_slug'])): ?>
+          <a href="product-form.php?id=<?= e((string) $it['prod_slug']) ?>" class="small text-muted-nova text-decoration-none">
+            <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i>View in catalog
+          </a>
+          <?php endif; ?>
+        </div>
+      </div>
+      <div class="admin-order-item-card__meta">
+        <div>
+          <span class="d-block small text-muted-nova">Unit price</span>
+          <strong><?= e(nova_money((int) $it['unit_price'])) ?></strong>
+        </div>
+        <div class="text-center">
+          <span class="d-block small text-muted-nova">Qty</span>
+          <span class="badge bg-light text-dark border"><?= e((string) $it['quantity']) ?></span>
+        </div>
+        <div class="text-end">
+          <span class="d-block small text-muted-nova">Line total</span>
+          <strong><?= e(nova_money((int) $it['line_total'])) ?></strong>
+        </div>
+      </div>
+    </article>
+<?php endforeach; ?>
+<?php if (!$items): ?>
+    <div class="admin-card text-center py-4 text-muted-nova">No item snapshots are recorded for this order.</div>
+<?php endif; ?>
+  </div>
 </div>
 
 <!-- Status Transition Workflow Card -->
@@ -281,7 +316,7 @@ $resolveItemImage = static function (?string $rawPath): string {
   </div>
 <?php $next = $TRANSITIONS[(string) $order['status']] ?? []; ?>
 <?php if ($next): ?>
-  <form method="post" action="order.php" novalidate>
+  <form method="post" action="order.php" class="admin-order-status-form" novalidate>
     <input type="hidden" name="csrf_token" value="<?= e(nova_csrf_token()) ?>">
     <input type="hidden" name="action" value="status">
     <input type="hidden" name="ref" value="<?= e((string) $order['order_ref']) ?>">

@@ -116,6 +116,22 @@ $flashes = [
 ];
 $flash = $flashes[(string) ($_GET['err'] ?? '')] ?? $flashes[(string) ($_GET['ok'] ?? '')] ?? null;
 
+$errorTargetMap = [
+    'Business name is required.' => 's-name',
+    'Enter a valid Egyptian phone number (e.g. 01012345678 or +201012345678).' => 's-phone',
+    'Enter a valid contact email address.' => 's-email',
+    'Physical business address is required.' => 's-address',
+    'Delivery fee must be a whole number of 0 or more.' => 's-fee',
+    'Free-delivery threshold must be a whole number of 0 or more.' => 's-over',
+];
+$errorTargets = [];
+foreach ($errs as $message) {
+    if (isset($errorTargetMap[$message])) {
+        $errorTargets[$errorTargetMap[$message]] = true;
+    }
+}
+$fieldHasError = static fn (string $target): bool => isset($errorTargets[$target]);
+
 $adminTitle = 'Settings | NOVA Admin';
 $adminNav = 'settings';
 require __DIR__ . '/../includes/admin-head.php';
@@ -138,11 +154,18 @@ require __DIR__ . '/../includes/admin-head.php';
 <?php endif; ?>
 
 <?php if ($errs): ?>
-<div class="alert alert-danger mb-4" role="alert">
-  <div class="fw-semibold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>Please fix the following errors:</div>
+<div class="alert alert-danger mb-4" id="settings-form-errors" role="alert" aria-labelledby="settings-form-error-title">
+  <div class="fw-semibold mb-1" id="settings-form-error-title"><i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>Please fix the following errors:</div>
   <ul class="mb-0 ps-3">
     <?php foreach ($errs as $m): ?>
-      <li><?= e($m) ?></li>
+      <?php $target = $errorTargetMap[$m] ?? null; ?>
+      <li>
+        <?php if ($target !== null): ?>
+          <a href="#<?= e($target) ?>" data-error-target="<?= e($target) ?>"><?= e($m) ?></a>
+        <?php else: ?>
+          <?= e($m) ?>
+        <?php endif; ?>
+      </li>
     <?php endforeach; ?>
   </ul>
 </div>
@@ -164,7 +187,7 @@ require __DIR__ . '/../includes/admin-head.php';
         <div class="row g-3">
           <div class="col-12">
             <label class="form-label fw-medium small" for="s-name">Business Legal / Brand Name <span class="text-danger">*</span></label>
-            <input class="form-control" id="s-name" name="setting[business_name]" maxlength="120" required value="<?= e($old['business_name']) ?>">
+            <input class="form-control<?= $fieldHasError('s-name') ? ' is-invalid' : '' ?>" id="s-name" name="setting[business_name]" maxlength="120" required value="<?= e($old['business_name']) ?>"<?= $fieldHasError('s-name') ? ' aria-invalid="true"' : '' ?>>
             <div class="form-text small text-muted-nova">Appears in customer order receipts and email notifications.</div>
           </div>
 
@@ -172,7 +195,7 @@ require __DIR__ . '/../includes/admin-head.php';
             <label class="form-label fw-medium small" for="s-phone">Contact Phone <span class="text-danger">*</span></label>
             <div class="input-group">
               <span class="input-group-text bg-white text-muted-nova"><i class="bi bi-telephone"></i></span>
-              <input class="form-control" id="s-phone" name="setting[phone]" type="tel" required placeholder="01012345678" value="<?= e($old['phone']) ?>">
+              <input class="form-control<?= $fieldHasError('s-phone') ? ' is-invalid' : '' ?>" id="s-phone" name="setting[phone]" type="tel" required placeholder="01012345678" value="<?= e($old['phone']) ?>"<?= $fieldHasError('s-phone') ? ' aria-invalid="true"' : '' ?>>
             </div>
           </div>
 
@@ -180,13 +203,13 @@ require __DIR__ . '/../includes/admin-head.php';
             <label class="form-label fw-medium small" for="s-email">Support Email <span class="text-danger">*</span></label>
             <div class="input-group">
               <span class="input-group-text bg-white text-muted-nova"><i class="bi bi-envelope"></i></span>
-              <input class="form-control" id="s-email" name="setting[email]" type="email" required placeholder="hello@novahome.eg" value="<?= e($old['email']) ?>">
+              <input class="form-control<?= $fieldHasError('s-email') ? ' is-invalid' : '' ?>" id="s-email" name="setting[email]" type="email" required placeholder="hello@novahome.eg" value="<?= e($old['email']) ?>"<?= $fieldHasError('s-email') ? ' aria-invalid="true"' : '' ?>>
             </div>
           </div>
 
           <div class="col-12">
             <label class="form-label fw-medium small" for="s-address">Showroom / Dispatch Address <span class="text-danger">*</span></label>
-            <input class="form-control" id="s-address" name="setting[address]" maxlength="255" required value="<?= e($old['address']) ?>">
+            <input class="form-control<?= $fieldHasError('s-address') ? ' is-invalid' : '' ?>" id="s-address" name="setting[address]" maxlength="255" required value="<?= e($old['address']) ?>"<?= $fieldHasError('s-address') ? ' aria-invalid="true"' : '' ?>>
           </div>
         </div>
       </div>
@@ -206,7 +229,7 @@ require __DIR__ . '/../includes/admin-head.php';
               <label class="form-label fw-medium small" for="s-fee">Standard Delivery Fee (EGP) <span class="text-danger">*</span></label>
               <div class="input-group">
                 <span class="input-group-text bg-white text-muted-nova">EGP</span>
-                <input class="form-control" id="s-fee" name="setting[delivery_fee]" type="number" min="0" step="1" required value="<?= e($old['delivery_fee']) ?>">
+                <input class="form-control<?= $fieldHasError('s-fee') ? ' is-invalid' : '' ?>" id="s-fee" name="setting[delivery_fee]" type="number" min="0" step="1" required value="<?= e($old['delivery_fee']) ?>"<?= $fieldHasError('s-fee') ? ' aria-invalid="true"' : '' ?>>
               </div>
               <div class="form-text small text-muted-nova">Applied to orders whose subtotal is below the free delivery threshold.</div>
             </div>
@@ -215,7 +238,7 @@ require __DIR__ . '/../includes/admin-head.php';
               <label class="form-label fw-medium small" for="s-over">Free Delivery Threshold (EGP) <span class="text-danger">*</span></label>
               <div class="input-group">
                 <span class="input-group-text bg-white text-muted-nova">EGP</span>
-                <input class="form-control" id="s-over" name="setting[free_delivery_threshold]" type="number" min="0" step="1" required value="<?= e($old['free_delivery_threshold']) ?>">
+                <input class="form-control<?= $fieldHasError('s-over') ? ' is-invalid' : '' ?>" id="s-over" name="setting[free_delivery_threshold]" type="number" min="0" step="1" required value="<?= e($old['free_delivery_threshold']) ?>"<?= $fieldHasError('s-over') ? ' aria-invalid="true"' : '' ?>>
               </div>
               <div class="form-text small text-muted-nova">Orders with a subtotal at or exceeding this amount receive free delivery (0 EGP).</div>
             </div>
@@ -236,5 +259,28 @@ require __DIR__ . '/../includes/admin-head.php';
     </div>
   </div>
 </form>
+
+<script>
+(function () {
+  var errorSummary = document.getElementById('settings-form-errors');
+  if (!errorSummary) return;
+
+  function focusErrorTarget(targetId) {
+    var target = document.getElementById(targetId);
+    if (target) target.focus();
+  }
+
+  var firstErrorLink = errorSummary.querySelector('[data-error-target]');
+  if (firstErrorLink) focusErrorTarget(firstErrorLink.getAttribute('data-error-target'));
+
+  errorSummary.addEventListener('click', function (event) {
+    if (!event.target || typeof event.target.closest !== 'function') return;
+    var link = event.target.closest('[data-error-target]');
+    if (!link) return;
+    event.preventDefault();
+    focusErrorTarget(link.getAttribute('data-error-target'));
+  });
+})();
+</script>
 
 <?php require __DIR__ . '/../includes/admin-foot.php'; ?>

@@ -52,8 +52,23 @@ $pageTitle = 'Create account | NOVA Home';
         <div class="row g-3">
           <div class="col-md-6"><label class="form-label" for="r-email">Email</label><input class="form-control" id="r-email" name="email" type="email" autocomplete="email" required><div class="invalid-feedback">Enter a valid email.</div></div>
           <div class="col-md-6"><label class="form-label" for="r-phone">Phone</label><input class="form-control" id="r-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="01012345678" pattern="^(\+20|0)?1[0125][0-9]{8}$" required><div class="invalid-feedback">Enter a valid Egyptian mobile number.</div></div>
-          <div class="col-md-6"><label class="form-label" for="r-pass">Password</label><input class="form-control" id="r-pass" name="password" type="password" autocomplete="new-password" minlength="8" aria-describedby="r-pass-hint" required><p class="form-text small text-muted-nova mb-0" id="r-pass-hint">Use at least 8 characters.</p><div class="invalid-feedback">Use at least 8 characters.</div></div>
-          <div class="col-md-6"><label class="form-label" for="r-pass2">Confirm password</label><input class="form-control" id="r-pass2" name="password_confirm" type="password" autocomplete="new-password" minlength="8" required><div class="invalid-feedback">Passwords must match.</div></div>
+          <div class="col-md-6">
+            <label class="form-label" for="r-pass">Password</label>
+            <div class="password-field">
+              <input class="form-control" id="r-pass" name="password" type="password" autocomplete="new-password" minlength="8" aria-describedby="r-pass-hint" required>
+              <button class="password-field__toggle" type="button" data-password-toggle aria-label="Show password" title="Show password" aria-controls="r-pass" aria-pressed="false"><i class="bi bi-eye" aria-hidden="true"></i></button>
+              <div class="invalid-feedback">Use at least 8 characters.</div>
+            </div>
+            <p class="form-text small text-muted-nova mb-0" id="r-pass-hint">Use at least 8 characters.</p>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="r-pass2">Confirm password</label>
+            <div class="password-field">
+              <input class="form-control" id="r-pass2" name="password_confirm" type="password" autocomplete="new-password" minlength="8" required>
+              <button class="password-field__toggle" type="button" data-password-toggle aria-label="Show password" title="Show password" aria-controls="r-pass2" aria-pressed="false"><i class="bi bi-eye" aria-hidden="true"></i></button>
+              <div class="invalid-feedback">Passwords must match.</div>
+            </div>
+          </div>
         </div>
         <div class="form-check mt-3">
           <input class="form-check-input" id="r-terms" name="terms" type="checkbox" required>
@@ -113,6 +128,7 @@ var CO_RETURN = <?= json_encode($returnTo, JSON_HEX_TAG | JSON_UNESCAPED_SLASHES
   });
 })();
 </script>
+<script src="../js/ui/password-toggle.js"></script>
 <script src="../js/products.js"></script>
 <script src="../js/settings.js"></script>
 <script src="../js/catalog.js"></script>

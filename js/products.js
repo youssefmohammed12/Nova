@@ -89,29 +89,50 @@ NOVA.delivery = {
   },
   info(id) { return NOVA.deliveryCities[id] || NOVA.deliveryCities[NOVA.delivery.def]; }
 };
-/* Lightweight in-memory search over the static catalogue. No duplicate data, no library. */
+/* Shared in-memory search rules for autocomplete and Shop results. */
 NOVA.search = {
   popular: ['Lamps', 'Vases', 'Lighting', 'Storage'],
   norm(q) { return String(q == null ? '' : q).toLowerCase().replace(/\s+/g, ' ').trim(); },
+  tokens(raw) {
+    return NOVA.search.norm(raw).split(' ').filter(Boolean).map(word => {
+      if (word.length > 4 && word.endsWith('ies')) return word.slice(0, -3) + 'y';
+      if (word.length > 4 && /(sses|xes|zes|ches|shes)$/.test(word)) return word.slice(0, -2);
+      if (word.length > 3 && word.endsWith('s') && !/(ss|us|is)$/.test(word)) return word.slice(0, -1);
+      return word;
+    });
+  },
+  searchableText(product) {
+    return [
+      product.name,
+      NOVA.catName(product.cat),
+      product.desc,
+      product.material,
+      ...(product.specs || []).map(spec => Array.isArray(spec) ? spec.join(' ') : String(spec || ''))
+    ].join(' ').toLowerCase();
+  },
+  matches(product, raw) {
+    const terms = NOVA.search.tokens(raw);
+    if (!terms.length) return false;
+    const text = NOVA.search.searchableText(product);
+    return terms.every(term => text.includes(term));
+  },
   suggestions(raw, limit = 5) {
     const q = NOVA.search.norm(raw);
-    if (!q) return [];
+    const terms = NOVA.search.tokens(q);
+    if (!terms.length) return [];
     const out = [];
     for (const p of NOVA.products) {
-      const name = p.name.toLowerCase();
+      const name = String(p.name || '').toLowerCase();
       const cat = NOVA.catName(p.cat).toLowerCase();
-      const extra = ((p.desc || '') + ' ' + (p.specs || []).map(s => s.join(' ')).join(' ')).toLowerCase();
+      const extra = [p.desc, p.material, ...(p.specs || []).map(spec =>
+        Array.isArray(spec) ? spec.join(' ') : String(spec || '')
+      )].join(' ').toLowerCase();
       let rank = -1;
-      if (name.startsWith(q)) rank = 0;
-      else if (name.includes(q)) rank = 1;
-      else if (cat.includes(q)) rank = 2;
-      else if (extra.includes(q)) rank = 3;
-      else if (q.indexOf(' ') !== -1) {
-        const toks = q.split(' '), hasAll = t => toks.every(tok => t.indexOf(tok) !== -1);
-        if (hasAll(name)) rank = 1;
-        else if (hasAll(cat)) rank = 2;
-        else if (hasAll(extra)) rank = 3;
-      }
+      if (name.startsWith(q) || name.startsWith(terms.join(' '))) rank = 0;
+      else if (terms.every(term => name.includes(term))) rank = 1;
+      else if (terms.every(term => cat.includes(term))) rank = 2;
+      else if (terms.every(term => extra.includes(term))) rank = 3;
+      else if (NOVA.search.matches(p, q)) rank = 4;
       if (rank >= 0) out.push({ p, rank });
     }
     out.sort((a, b) => a.rank - b.rank || a.p.name.localeCompare(b.p.name));

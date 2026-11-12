@@ -23,15 +23,16 @@
     return clean;
   }
   function readWish() {
-    return readList(WISH).filter(id => typeof id === 'string' && id !== '');
+    return readList(WISH).filter(isValidId);
   }
   const save = (k, v, eventName) => {
     try { localStorage.setItem(k, JSON.stringify(v)); }
     catch {
       if (NOVA.ui && typeof NOVA.ui.toast === 'function') NOVA.ui.toast('Could not save: browser storage is unavailable.');
-      return;
+      return false;
     }
     document.dispatchEvent(new CustomEvent(eventName));
+    return true;
   };
   NOVA.cart = {
     items: () => readCart(),
@@ -57,7 +58,11 @@
   NOVA.wish = {
     has: id => readWish().includes(id),
     ids: () => readWish(),
-    toggle(id) { if (typeof id !== 'string' || !id) return false; const w = readWish(), on = !w.includes(id); save(WISH, on ? [...w, id] : w.filter(x => x !== id), 'wishlist:change'); return on; }
+    toggle(id) {
+      if (!isValidId(id)) return null;
+      const w = readWish(), on = !w.includes(id);
+      return save(WISH, on ? [...w, id] : w.filter(x => x !== id), 'wishlist:change') ? on : null;
+    }
   };
   /* Recently viewed: newest-first list of product IDs (max 6). Never throws. */
   const RECENT = 'nova_recently_viewed', RECENT_MAX = 6;

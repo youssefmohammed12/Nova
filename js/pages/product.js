@@ -21,6 +21,7 @@
     const paint = (p, detail) => {
     const apiImgs = detail && Array.isArray(detail.images) ? detail.images.map(i => i.image_path) : [];
     const imgs = apiImgs.length ? apiImgs : NOVA.imgs(p.id);
+    const mainImage = $('#gallery-main');
     const off = p.old ? Math.round((1 - p.price / p.old) * 100) : 0;
     document.title = `${p.name} | NOVA Home`;
     const bcCat = $('#bc-cat'), bcName = $('#bc-name'), pdpCat = $('#pdp-cat'), pdpName = $('#pdp-name');
@@ -29,17 +30,17 @@
     pdpCat.textContent = NOVA.catName(p.cat); pdpName.textContent = p.name;
     /* No reviews table yet — show an honest empty state rather than a rating. */
     $('#pdp-rating').innerHTML = '<span class="text-muted-nova">No reviews yet</span>';
-    $('#pdp-price').innerHTML = `${fmt(p.price)}${p.old ? `<span class="price--old"><span class="visually-hidden">Was </span>${fmt(p.old)}</span> <span class="badge text-bg-danger ms-1">Save ${off}%</span>` : ''}`;
+    $('#pdp-price').innerHTML = `${fmt(p.price)}${p.old ? `<span class="price--old"><span class="visually-hidden">Was </span>${fmt(p.old)}</span> <span class="pdp__discount-badge">Save ${off}%</span>` : ''}`;
     $('#pdp-desc').textContent = p.desc;
     const apiSpecs = detail && Array.isArray(detail.specifications) ? detail.specifications : [];
     const specRows = apiSpecs.length ? apiSpecs.map(s => [s.key, s.value]) : (p.specs || []);
     $('#pdp-specs').innerHTML = specRows.map(([k, v]) => `<tr><th scope="row">${esc(k)}</th><td>${esc(v)}</td></tr>`).join('');
-    main.src = imgs[0]; main.alt = p.name;
+    if (mainImage && imgs[0]) { mainImage.src = imgs[0]; mainImage.alt = p.name; }
     const thumbsEl = $('#gallery-thumbs');
     if (thumbsEl) {
       thumbsEl.hidden = imgs.length <= 1;
       thumbsEl.innerHTML = imgs.length > 1 ? imgs.map((src, i) => `<button class="gallery__thumb" type="button" data-src="${esc(src)}" aria-label="Show image ${i + 1}"${i === 0 ? ' aria-current="true"' : ''}><img src="${esc(src)}" width="200" height="200" alt=""></button>`).join('') : '';
-      thumbsEl.addEventListener('click', e => { const b = e.target.closest('.gallery__thumb'); if (!b || b.dataset.src === main.src) return; const wrap = main.closest('.gallery__main'); if (wrap) wrap.classList.add('is-swap'); setTimeout(() => { main.src = b.dataset.src; main.onload = () => { if (wrap) wrap.classList.remove('is-swap'); }; setTimeout(() => { if (wrap) wrap.classList.remove('is-swap'); }, 300); }, 120); document.querySelectorAll('.gallery__thumb').forEach(t => { if (t === b) t.setAttribute('aria-current', 'true'); else t.removeAttribute('aria-current'); }); });
+      thumbsEl.addEventListener('click', e => { const b = e.target.closest('.gallery__thumb'); if (!b || !mainImage || b.dataset.src === mainImage.getAttribute('src')) return; const wrap = mainImage.closest('.gallery__main'); if (wrap) wrap.classList.add('is-swap'); setTimeout(() => { mainImage.src = b.dataset.src; mainImage.onload = () => { if (wrap) wrap.classList.remove('is-swap'); }; setTimeout(() => { if (wrap) wrap.classList.remove('is-swap'); }, 300); }, 120); document.querySelectorAll('.gallery__thumb').forEach(t => { if (t === b) t.setAttribute('aria-current', 'true'); else t.removeAttribute('aria-current'); }); });
     }
     let qty = 1; const out = $('#qty-value'), add = $('#pdp-add'), minusBtn = $('#qty-minus'), plusBtn = $('#qty-plus');
     if (!out || !add || !minusBtn || !plusBtn) return;

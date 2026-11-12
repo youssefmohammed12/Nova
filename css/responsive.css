@@ -47,17 +47,19 @@
   .account-side { padding: .75rem; border-radius: var(--radius-sm); }
   .account-side .account-user-card { display: none; }
   .account-side .account-side-sep { display: none; }
-  .account-side nav { display: flex; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; gap: .4rem; padding-bottom: .15rem; }
-  .account-side nav::-webkit-scrollbar { display: none; }
-  .account-side a { flex: 0 0 auto; white-space: nowrap; padding: .45rem .85rem; border: 1px solid var(--c-line); border-radius: 999px; font-size: .84rem; background: var(--c-surface); }
+  .account-side nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem; padding-bottom: .15rem; }
+  .account-side a { min-width: 0; min-height: 44px; justify-content: flex-start; white-space: normal; overflow-wrap: anywhere; padding: .55rem .65rem; border: 1px solid var(--c-line); border-radius: var(--radius-sm); font-size: .84rem; background: var(--c-surface); }
   .account-side a[aria-current="page"] { background: var(--c-ink); color: #fff; border-color: var(--c-ink); box-shadow: none; }
-  .account-side a.account-side-logout { border-color: #F8D7DA; }
+  .account-side a.account-side-logout { margin-top: 0; padding-top: .55rem; border: 1px solid #F8D7DA; background: #FFFAF9; color: #A83232; }
 }
 @media (max-width: 767.98px) {
-  .table-card--orders { display: none; }
-  .order-mobile-list { display: grid; }
+  .table-card--orders,
+  .table-card--order-detail { display: none; }
+  .order-mobile-list,
+  .order-detail-mobile-list { display: grid; }
 }
 @media (max-width: 575.98px) {
+  .success-actions .btn { flex: 1 1 100%; }
   .section-head { flex-direction: column; align-items: flex-start; }
   .hero__actions .btn { flex: 1 1 100%; }
   .newsletter form { flex-direction: column; }
@@ -81,6 +83,13 @@
   .shop-header__title { font-size: 1.85rem; }
   .shop-toolbar { margin-bottom: 1rem; }
   .cat-pill { padding: .42rem .8rem; font-size: .8125rem; }
+  .product-card { padding: .6rem .6rem .85rem; border-radius: 12px; }
+  .product-card__body { padding: .75rem .2rem 0; }
+  .product-card__cat { font-size: .68rem; }
+  .product-card__mat { font-size: .74rem; }
+  .product-card__name { font-size: .92rem; margin-top: .3rem; }
+  .product-card__body .price { font-size: .92rem; }
+  .product-card__add { min-height: 44px; font-size: .78rem; padding-inline: .65rem; }
   .brand { font-size: 1.45rem; }
   .header-actions { gap: .2rem; }
   .site-footer { padding-top: 3.5rem; }

@@ -37,15 +37,11 @@ img { max-width: 100%; height: auto; }
 .form-check-input:checked { background-color: var(--c-accent); border-color: var(--c-accent); }
 .form-check-input:focus { border-color: var(--c-accent); box-shadow: 0 0 0 .2rem rgba(169, 79, 44, .18); }
 
-/* Entrance animation: opt-in via [data-reveal] on a few sections only */
-[data-reveal] { opacity: 0; transform: translateY(16px); transition: opacity .6s var(--ease), transform .6s var(--ease); }
-[data-reveal].is-visible { opacity: 1; transform: none; }
-/* Hero entrance (runs once via .is-ready added after mount) */
-.hero__text > * { transition: opacity .6s var(--ease), transform .6s var(--ease); }
-.hero__art { transition: opacity .7s var(--ease), transform .7s var(--ease); }
-body:not(.is-ready) .hero__text > *, body:not(.is-ready) .hero__art { opacity: 0; transform: translateY(14px); }
-body.is-ready .hero__text > :nth-child(2) { transition-delay: .08s; }
-body.is-ready .hero__text > :nth-child(3) { transition-delay: .16s; }
+/* Progressive enhancement: content stays visible until the shared UI is ready.
+   Reveal motion is opt-in only after JS has mounted and IntersectionObserver is active. */
+[data-reveal] { opacity: 1; transform: none; }
+.is-ready [data-reveal]:not(.is-visible) { opacity: 0; transform: translateY(16px); transition: opacity .6s var(--ease), transform .6s var(--ease); }
+.is-ready [data-reveal].is-visible { opacity: 1; transform: none; transition: opacity .6s var(--ease), transform .6s var(--ease); }
 /* Restrained interaction motion (transform/opacity only) */
 .product-card { transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease); }
 .product-card:hover { transform: translateY(-3px); }
@@ -68,7 +64,7 @@ body.is-ready .hero__text > :nth-child(3) { transition-delay: .16s; }
 .admin-card, .admin-table-wrap { transition: opacity .45s var(--ease), transform .45s var(--ease); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; scroll-behavior: auto !important; }
-  [data-reveal] { opacity: 1; transform: none; }
-  body:not(.is-ready) .hero__text > *, body:not(.is-ready) .hero__art { opacity: 1; transform: none; }
+  [data-reveal],
+  .is-ready [data-reveal]:not(.is-visible) { opacity: 1; transform: none; }
   .product-card:hover, .category-card:hover, .gallery__thumb:hover { transform: none; }
 }

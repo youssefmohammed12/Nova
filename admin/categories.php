@@ -100,7 +100,10 @@ $categories = $pdo->query(
     . ' ORDER BY c.`sort_order` ASC, c.`name` ASC'
 )->fetchAll();
 
-$editParam = (int) ($_GET['form'] ?? 0);
+$postEditId = is_post() && (($_POST['action'] ?? '') === 'update')
+    ? (v_int_range($_POST['id'] ?? null, 1, 1000000) ?? 0)
+    : 0;
+$editParam = (int) ($_GET['form'] ?? $postEditId);
 if ($editParam > 0) {
     $showForm = true;
     foreach ($categories as $c) {
@@ -132,6 +135,20 @@ $flashes = [
     'invalid'      => ['danger', 'Unable to save category.'],
 ];
 $flash = $flashes[$err] ?? ($ok !== '' ? ($flashes[$ok] ?? null) : null);
+
+$errorTargetMap = [
+    'Category name is required.' => 'c-name',
+    'Slug must be lowercase letters, numbers and dashes (e.g. home-decor).' => 'c-slug',
+    'Image must be an existing asset under assets/images/ (e.g. assets/images/cat-decor.svg or .webp).' => 'c-image',
+    'Slug already exists - choose a different one.' => 'c-slug',
+];
+$errorTargets = [];
+foreach ($errs as $message) {
+    if (isset($errorTargetMap[$message])) {
+        $errorTargets[$errorTargetMap[$message]] = true;
+    }
+}
+$fieldHasError = static fn (string $target): bool => isset($errorTargets[$target]);
 
 $adminTitle = 'Categories | NOVA Admin';
 $adminNav = 'categories';
@@ -172,11 +189,18 @@ require __DIR__ . '/../includes/admin-head.php';
   </div>
 
   <?php if ($errs): ?>
-  <div class="alert alert-danger mb-4" role="alert">
-    <div class="fw-semibold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>Please fix the following:</div>
+  <div class="alert alert-danger mb-4" id="category-form-errors" role="alert" aria-labelledby="category-form-error-title">
+    <div class="fw-semibold mb-1" id="category-form-error-title"><i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>Please fix the following:</div>
     <ul class="mb-0 ps-3">
       <?php foreach ($errs as $m): ?>
-        <li><?= e($m) ?></li>
+        <?php $target = $errorTargetMap[$m] ?? null; ?>
+        <li>
+          <?php if ($target !== null): ?>
+            <a href="#<?= e($target) ?>" data-error-target="<?= e($target) ?>"><?= e($m) ?></a>
+          <?php else: ?>
+            <?= e($m) ?>
+          <?php endif; ?>
+        </li>
       <?php endforeach; ?>
     </ul>
   </div>
@@ -192,18 +216,18 @@ require __DIR__ . '/../includes/admin-head.php';
     <div class="row g-3">
       <div class="col-md-6">
         <label class="form-label fw-medium small" for="c-name">Category Name <span class="text-danger">*</span></label>
-        <input class="form-control" id="c-name" name="name" maxlength="100" required placeholder="e.g. Living Room" value="<?= e($old['name']) ?>">
+        <input class="form-control<?= $fieldHasError('c-name') ? ' is-invalid' : '' ?>" id="c-name" name="name" maxlength="100" required placeholder="e.g. Living Room" value="<?= e($old['name']) ?>"<?= $fieldHasError('c-name') ? ' aria-invalid="true"' : '' ?>>
       </div>
       <div class="col-md-6">
         <label class="form-label fw-medium small" for="c-slug">URL Slug <span class="text-danger">*</span></label>
-        <input class="form-control" id="c-slug" name="slug" maxlength="60" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="e.g. living-room" value="<?= e($old['slug']) ?>">
+        <input class="form-control<?= $fieldHasError('c-slug') ? ' is-invalid' : '' ?>" id="c-slug" name="slug" maxlength="60" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="e.g. living-room" value="<?= e($old['slug']) ?>"<?= $fieldHasError('c-slug') ? ' aria-invalid="true"' : '' ?>>
         <div class="form-text small text-muted-nova">Lowercase letters, numbers, and hyphens. Used in shop URLs.</div>
       </div>
       <div class="col-md-8">
         <label class="form-label fw-medium small" for="c-image">Image Asset Path <span class="text-danger">*</span></label>
         <div class="input-group">
           <span class="input-group-text bg-white text-muted-nova"><i class="bi bi-image"></i></span>
-          <input class="form-control" id="c-image" name="image" maxlength="255" required placeholder="assets/images/cat-decor.svg" value="<?= e($old['image']) ?>">
+          <input class="form-control<?= $fieldHasError('c-image') ? ' is-invalid' : '' ?>" id="c-image" name="image" maxlength="255" required placeholder="assets/images/cat-decor.svg" value="<?= e($old['image']) ?>"<?= $fieldHasError('c-image') ? ' aria-invalid="true"' : '' ?>>
         </div>
         <div class="form-text small text-muted-nova">Path to asset under <code>assets/images/</code> (.webp, .jpg, .svg).</div>
       </div>
@@ -223,7 +247,7 @@ require __DIR__ . '/../includes/admin-head.php';
 <?php endif; ?>
 
 <!-- Categories Table -->
-<div class="admin-table-wrap">
+<div class="admin-table-wrap d-none d-xxl-block">
   <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
     <span class="small text-muted-nova"><strong><?= count($categories) ?></strong> categories defined in database</span>
     <span class="small text-muted-nova">Categories with assigned products cannot be deleted</span>
@@ -276,7 +300,7 @@ require __DIR__ . '/../includes/admin-head.php';
                 <input type="hidden" name="csrf_token" value="<?= e(nova_csrf_token()) ?>">
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="id" value="<?= e((string) $c['id']) ?>">
-                <button class="btn btn-outline-danger btn-sm" type="submit" title="Delete category"><i class="bi bi-trash"></i></button>
+                <button class="btn btn-outline-danger btn-sm" type="submit" title="Delete category" aria-label="Delete category: <?= e((string) $c['name']) ?>"><i class="bi bi-trash" aria-hidden="true"></i></button>
               </form>
               <?php endif; ?>
             </div>
@@ -290,5 +314,99 @@ require __DIR__ . '/../includes/admin-head.php';
     </table>
   </div>
 </div>
+
+<!-- Mobile Category Cards -->
+<div class="admin-categories-mobile d-xxl-none d-grid gap-3">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 px-1 small text-muted-nova">
+    <strong><?= count($categories) ?> categories defined</strong>
+    <span>Categories with products cannot be deleted</span>
+  </div>
+<?php foreach ($categories as $c): ?>
+  <?php
+    $cImg = (string) $c['image'];
+    $cSrc = $cImg !== '' ? '../' . ltrim($cImg, '/') : '../assets/images/cat-decor.svg';
+    $canDelete = (int) $c['product_count'] === 0;
+  ?>
+  <article class="admin-card admin-category-mobile-card">
+    <div class="admin-category-mobile-card__top">
+      <img class="admin-category-mobile-thumb" src="<?= e($cSrc) ?>" width="56" height="56" alt="" loading="lazy">
+      <div class="admin-category-mobile-card__details">
+        <h2 class="h6 mb-1 fw-semibold">
+          <a class="admin-category-mobile-card__name text-dark text-decoration-none" href="categories.php?form=<?= e((string) $c['id']) ?>">
+            <?= e((string) $c['name']) ?>
+          </a>
+        </h2>
+        <code class="small text-muted-nova"><?= e((string) $c['slug']) ?></code>
+      </div>
+    </div>
+
+    <div class="admin-category-mobile-card__meta py-2 my-2 border-top border-bottom">
+      <div>
+        <span class="d-block small text-muted-nova">Sort order</span>
+        <span class="badge bg-light text-dark border"><?= e((string) $c['sort_order']) ?></span>
+      </div>
+      <div class="text-end">
+        <span class="d-block small text-muted-nova">Products</span>
+        <a href="products.php?cat=<?= e((string) $c['slug']) ?>" class="badge bg-secondary-subtle text-secondary-emphasis text-decoration-none border">
+          <?= e((string) $c['product_count']) ?> product<?= (int) $c['product_count'] === 1 ? '' : 's' ?>
+        </a>
+      </div>
+    </div>
+
+    <div class="admin-category-mobile-card__asset">
+      <span class="d-block small text-muted-nova mb-1">Image asset</span>
+      <code><?= e((string) $c['image']) ?></code>
+    </div>
+
+    <div class="admin-category-mobile-card__actions<?= $canDelete ? '' : ' admin-category-mobile-card__actions--single' ?>">
+      <a class="btn btn-ghost btn-sm" href="categories.php?form=<?= e((string) $c['id']) ?>">
+        <i class="bi bi-pencil me-1" aria-hidden="true"></i>Edit
+      </a>
+      <?php if ($canDelete): ?>
+      <form method="post" action="categories.php" class="m-0" onsubmit="return confirm('Delete this empty category?');">
+        <input type="hidden" name="csrf_token" value="<?= e(nova_csrf_token()) ?>">
+        <input type="hidden" name="action" value="delete">
+        <input type="hidden" name="id" value="<?= e((string) $c['id']) ?>">
+        <button class="btn btn-outline-danger btn-sm" type="submit" title="Delete category" aria-label="Delete category: <?= e((string) $c['name']) ?>">
+          <i class="bi bi-trash me-1" aria-hidden="true"></i>Delete
+        </button>
+      </form>
+      <?php endif; ?>
+    </div>
+    <?php if (!$canDelete): ?>
+    <p class="small text-muted-nova mb-0 mt-2">Deletion is unavailable while products are assigned.</p>
+    <?php endif; ?>
+  </article>
+<?php endforeach; ?>
+<?php if (!$categories): ?>
+  <div class="admin-card text-center py-5 text-muted-nova">
+    <i class="bi bi-folder2-open fs-3 d-block mb-2" aria-hidden="true"></i>
+    <p class="mb-0">No categories created yet.</p>
+  </div>
+<?php endif; ?>
+</div>
+
+<script>
+(function () {
+  var errorSummary = document.getElementById('category-form-errors');
+  if (!errorSummary) return;
+
+  function focusErrorTarget(targetId) {
+    var target = document.getElementById(targetId);
+    if (target) target.focus();
+  }
+
+  var firstErrorLink = errorSummary.querySelector('[data-error-target]');
+  if (firstErrorLink) focusErrorTarget(firstErrorLink.getAttribute('data-error-target'));
+
+  errorSummary.addEventListener('click', function (event) {
+    if (!event.target || typeof event.target.closest !== 'function') return;
+    var link = event.target.closest('[data-error-target]');
+    if (!link) return;
+    event.preventDefault();
+    focusErrorTarget(link.getAttribute('data-error-target'));
+  });
+})();
+</script>
 
 <?php require __DIR__ . '/../includes/admin-foot.php'; ?>

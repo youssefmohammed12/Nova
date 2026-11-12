@@ -34,7 +34,7 @@ require __DIR__ . '/../includes/admin-head.php';
     <h1 class="h3 fw-semibold mb-1">Dashboard</h1>
     <p class="text-muted-nova mb-0 small">Live catalog overview, order fulfillment status, and store controls.</p>
   </div>
-  <div class="d-flex align-items-center gap-2">
+  <div class="d-flex align-items-center gap-2 admin-dashboard-header-actions">
     <a class="btn btn-nova btn-sm d-inline-flex align-items-center gap-1 shadow-sm" href="product-form.php">
       <i class="bi bi-plus-lg" aria-hidden="true"></i>
       <span>Add Product</span>
@@ -102,10 +102,11 @@ require __DIR__ . '/../includes/admin-head.php';
         <div>
           <h2 class="admin-card-title h6 mb-0"><i class="bi bi-receipt-cutoff"></i> Recent Orders</h2>
         </div>
-        <a class="btn btn-ghost btn-sm py-1 px-2" href="orders.php">
+        <a class="btn btn-ghost btn-sm py-1 px-2 admin-dashboard-orders__view-all" href="orders.php">
           View all orders <i class="bi bi-arrow-right ms-1"></i>
         </a>
       </div>
+      <div class="d-none d-xxl-block">
       <table class="table align-middle m-0">
         <thead>
           <tr>
@@ -145,6 +146,34 @@ require __DIR__ . '/../includes/admin-head.php';
 <?php endif; ?>
         </tbody>
       </table>
+      </div>
+
+      <div class="admin-dashboard-orders-mobile d-xxl-none d-grid gap-3 p-3">
+<?php if ($recentOrders): ?>
+<?php foreach ($recentOrders as $o): ?>
+        <article class="admin-card admin-dashboard-order-card">
+          <div class="admin-dashboard-order-card__top">
+            <div class="admin-dashboard-order-card__identity">
+              <a class="fw-semibold text-decoration-none" href="order.php?ref=<?= e((string) $o['order_ref']) ?>">
+                <?= e((string) $o['order_ref']) ?>
+              </a>
+              <div class="fw-medium mt-1"><?= e((string) $o['customer_name']) ?></div>
+            </div>
+            <strong class="text-nowrap"><?= e(nova_money((int) $o['total'])) ?></strong>
+          </div>
+          <div class="admin-dashboard-order-card__meta">
+            <span class="small text-muted-nova"><?= date('M j, Y', strtotime((string) $o['created_at'])) ?></span>
+            <span class="status status--<?= e((string) $o['status']) ?>"><?= e(ucfirst((string) $o['status'])) ?></span>
+          </div>
+          <a class="btn btn-ghost btn-sm admin-dashboard-order-card__action" href="order.php?ref=<?= e((string) $o['order_ref']) ?>">
+            View order details <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>
+          </a>
+        </article>
+<?php endforeach; ?>
+<?php else: ?>
+        <div class="admin-card text-center py-4 text-muted-nova">No orders recorded yet.</div>
+<?php endif; ?>
+      </div>
     </div>
   </div>
 
@@ -154,7 +183,7 @@ require __DIR__ . '/../includes/admin-head.php';
       <div class="admin-card-header">
         <h2 class="admin-card-title h6"><i class="bi bi-lightning-charge"></i> Quick Actions</h2>
       </div>
-      <div class="d-flex flex-column gap-2">
+      <div class="d-flex flex-column gap-2 admin-dashboard-quick-actions">
         <a href="product-form.php" class="btn btn-outline-secondary text-start d-flex align-items-center justify-content-between p-2">
           <span class="d-flex align-items-center gap-2"><i class="bi bi-box-seam text-terracotta"></i> Create New Product</span>
           <i class="bi bi-chevron-right small text-muted"></i>
