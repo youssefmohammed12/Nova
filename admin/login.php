@@ -38,11 +38,11 @@ $pageTitle = 'Admin Sign In | NOVA Home';
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
-<link rel="stylesheet" href="../css/variables.css">
-<link rel="stylesheet" href="../css/base.css">
-<link rel="stylesheet" href="../css/components.css">
-<link rel="stylesheet" href="../css/pages.css">
-<link rel="stylesheet" href="../css/responsive.css">
+<link rel="stylesheet" href="../css/variables.css?v=2026.11.12.1">
+<link rel="stylesheet" href="../css/base.css?v=2026.11.12.1">
+<link rel="stylesheet" href="../css/components.css?v=2026.11.12.1">
+<link rel="stylesheet" href="../css/pages.css?v=2026.11.12.1">
+<link rel="stylesheet" href="../css/responsive.css?v=2026.11.12.1">
 </head>
 <body data-page="admin-login">
 <a class="skip-link" href="#main">Skip to content</a>
@@ -193,6 +193,6 @@ $pageTitle = 'Admin Sign In | NOVA Home';
   });
 })();
 </script>
-<script src="../js/ui/password-toggle.js"></script>
+<script src="../js/ui/password-toggle.js?v=2026.11.12.1"></script>
 </body>
 </html>

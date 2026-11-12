@@ -29,11 +29,11 @@ $pageTitle = 'Create account | NOVA Home';
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
-<link rel="stylesheet" href="../css/variables.css">
-<link rel="stylesheet" href="../css/base.css">
-<link rel="stylesheet" href="../css/components.css">
-<link rel="stylesheet" href="../css/pages.css">
-<link rel="stylesheet" href="../css/responsive.css">
+<link rel="stylesheet" href="../css/variables.css?v=2026.11.12.1">
+<link rel="stylesheet" href="../css/base.css?v=2026.11.12.1">
+<link rel="stylesheet" href="../css/components.css?v=2026.11.12.1">
+<link rel="stylesheet" href="../css/pages.css?v=2026.11.12.1">
+<link rel="stylesheet" href="../css/responsive.css?v=2026.11.12.1">
 </head>
 <body data-page="account-register">
 <a class="skip-link" href="#main">Skip to content</a>
@@ -128,15 +128,15 @@ var CO_RETURN = <?= json_encode($returnTo, JSON_HEX_TAG | JSON_UNESCAPED_SLASHES
   });
 })();
 </script>
-<script src="../js/ui/password-toggle.js"></script>
-<script src="../js/products.js"></script>
-<script src="../js/settings.js"></script>
-<script src="../js/catalog.js"></script>
-<script src="../js/cart.js"></script>
-<script src="../js/ui/search.js"></script>
-<script src="../js/ui/quick-view.js"></script>
-<script src="../js/ui/shell.js"></script>
-<script src="../js/ui.js"></script>
-<script src="../js/main.js"></script>
+<script src="../js/ui/password-toggle.js?v=2026.11.12.1"></script>
+<script src="../js/products.js?v=2026.11.12.1"></script>
+<script src="../js/settings.js?v=2026.11.12.1"></script>
+<script src="../js/catalog.js?v=2026.11.12.1"></script>
+<script src="../js/cart.js?v=2026.11.12.1"></script>
+<script src="../js/ui/search.js?v=2026.11.12.1"></script>
+<script src="../js/ui/quick-view.js?v=2026.11.12.1"></script>
+<script src="../js/ui/shell.js?v=2026.11.12.1"></script>
+<script src="../js/ui.js?v=2026.11.12.1"></script>
+<script src="../js/main.js?v=2026.11.12.1"></script>
 </body>
 </html>

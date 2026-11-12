@@ -1,0 +1,100 @@
+name: Deploy NOVA to InfinityFree
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Preview the file changes without uploading or deleting anything"
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nova-infinityfree-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # Push deployments stay disabled until the first manual dry-run and live deployment
+    # have both been checked. Manual dispatch is always available.
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.INFINITYFREE_DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Validate deployment credentials
+        shell: bash
+        env:
+          FTP_USERNAME: ${{ secrets.INFINITYFREE_FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.INFINITYFREE_FTP_PASSWORD }}
+        run: |
+          if [[ -z "$FTP_USERNAME" || -z "$FTP_PASSWORD" ]]; then
+            echo "::error::Add INFINITYFREE_FTP_USERNAME and INFINITYFREE_FTP_PASSWORD under Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+          echo "FTP credentials are configured. Secret values were not printed."
+
+      - name: Verify required runtime files
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in .htaccess index.html health.php includes/.htaccess includes/bootstrap.php api/products.php css/base.css js/main.js; do
+            test -f "$file" || { echo "::error::Required deployment file is missing: $file"; exit 1; }
+          done
+          echo "Required NOVA runtime files are present."
+
+      - name: Deploy over explicit FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        with:
+          server: ftpupload.net
+          username: ${{ secrets.INFINITYFREE_FTP_USERNAME }}
+          password: ${{ secrets.INFINITYFREE_FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          security: strict
+          local-dir: ./
+          server-dir: /nova-home.fast-page.org/htdocs/
+          state-name: includes/.ftp-deploy-sync-state.json
+          dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+          dangerous-clean-slate: false
+          timeout: 60000
+          log-level: standard
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.env*
+            **/*.pem
+            **/*.key
+            **/*.p12
+            **/*.pfx
+            **/*.log
+            **/*.tmp
+            **/*.bak
+            **/.DS_Store
+            **/Thumbs.db
+            .github/**
+            .gitignore
+            README*
+            **/README*
+            **/*.md
+            PROJECT_GUIDE.md
+            package.json
+            package-lock.json
+            config/**
+            database/**
+            docs/**
+            node_modules/**
+            scripts/**
+            screenshots/**

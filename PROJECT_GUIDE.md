@@ -1122,6 +1122,7 @@ Minimal dependencies, lazy loading, no unnecessary network requests.
 - Cart and wishlist state is cached in `Set` objects within single render passes (no repeated localStorage reads per card)
 - `IntersectionObserver` for reveal animation — no scroll listener polling
 - Sticky CTA uses `IntersectionObserver` primary + passive scroll listener fallback
+- Local CSS and JavaScript references use a shared release query string (currently `?v=2026.11.12.1`) to invalidate InfinityFree's 30-day static-asset browser cache after deployment. **Bump the version consistently across all HTML pages, customer PHP pages, and the shared admin head whenever local CSS or JavaScript changes.** Keep third-party CDN URLs pinned to their library versions; do not append the NOVA release token to them.
 
 ### Lighthouse Result
 A Lighthouse run was performed under **local development conditions** (simulated mobile throttling).
